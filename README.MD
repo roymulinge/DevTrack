@@ -187,4 +187,4 @@ Its modular backend architecture ensures scalability for future SaaS deployment 
 
 * **Name:** Roy Mulinge
 * **Email:** mutuaroymulinge@gmail.com
-* **GitHub:** 
+* **GitHub:** https://github.com/roymulinge/DevTrack.git
