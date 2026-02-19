@@ -34,6 +34,9 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+    'accounts',
+    'rest_framework',
+    'rest_framework_simplejwt',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -123,5 +126,4 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 
-print("DB_USER:", os.getenv('DB_USER'))
-print("DB_PASSWORD:", os.getenv('DB_PASSWORD'))
+
