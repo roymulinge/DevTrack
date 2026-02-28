@@ -16,6 +16,15 @@ class Project(OwnedModel):
         default='active'
     )
 
+    class Meta:
+        verbose_name = "Project"
+        verbose_name_plural = "Projects"
+        ordering = ["-created_at"]
+        indexes = [
+            models.Index(fields=["owner"]),
+            models.Index(fields=["status"]),
+        ]
+
     def __str__(self):
         return self.name
 
