@@ -44,8 +44,23 @@ class Assignment(OwnedModel):
         "skills.Skill",
         on_delete=models.SET_NULL,
         null=True,
-        blank=True
+        blank=True,
+        related_name="assignments"
     )
 
+    class Meta:
+        verbose_name = "Assignment"
+        verbose_name_plural = "Assignments"
+        ordering = ["deadline"]
+        constraints = [
+            models.CheckConstraint(
+                check=models.Q(effort_estimate__gte=0),
+                name="positive_effort_estimate"
+            )
+        ]
+        indexes = [
+            models.Index(fields=["deadline"]),
+            models.Index(fields=["completed"]),
+        ]
     def __str__(self):
         return self.title
