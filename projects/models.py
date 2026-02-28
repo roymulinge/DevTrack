@@ -6,7 +6,15 @@ class Project(OwnedModel):
     name = models.CharField(max_length=200)
     vision = models.TextField()
     priority = models.IntegerField()
-    status = models.CharField(max_length=50)
+    status = models.CharField(
+        max_length=30,
+        choices=[
+            ('active', 'Active'),
+            ('paused', 'Paused'),
+            ('completed', 'Completed'),
+        ],
+        default='active'
+    )
 
     def __str__(self):
         return self.name
