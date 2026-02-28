@@ -1,6 +1,6 @@
 from django.db import models
 from core.models import OwnedModel
-
+from django.db.models import Q
 # Create your models here.
 class Project(OwnedModel):
     name = models.CharField(max_length=200)
@@ -54,7 +54,7 @@ class Assignment(OwnedModel):
         ordering = ["deadline"]
         constraints = [
             models.CheckConstraint(
-                check=models.Q(effort_estimate__gte=0),
+                condition= Q(effort_estimate__gte=0),
                 name="positive_effort_estimate"
             )
         ]
