@@ -1,7 +1,7 @@
 from rest_framework.routers import DefaultRouter
-from .views import IdeaViewSet
+from .views import ProjectViewSet
 
 router = DefaultRouter()
-router.register(r"ideas", IdeaViewSet, basename="idea")
+router.register(r"projects", ProjectViewSet, basename="project")
 
 urlpatterns = router.urls
