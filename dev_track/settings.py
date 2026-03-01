@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'ideas',
     'planning',
     'rest_framework',
+    'django_filters',
     'rest_framework_simplejwt',
     'django.contrib.admin',
     'django.contrib.auth',
