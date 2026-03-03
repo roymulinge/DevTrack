@@ -1,1 +1,1 @@
-web: gunicorn DEVTRACK.wsgi
+web: gunicorn DevTrack.wsgi
