@@ -8,6 +8,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter, OrderingFilter
 
 class SkillViewSet(OwnerQuerySetMixin, ModelViewSet):
+    queryset = Skill.objects.all()
     serializer_class = SkillSerializer
     permission_classes = [IsAuthenticated, IsOwner]
     

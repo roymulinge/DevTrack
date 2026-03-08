@@ -8,12 +8,13 @@ from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter, OrderingFilter
 
 class WeeklyPriorityViewSet(OwnerQuerySetMixin, ModelViewSet):
+    queryset = WeeklyPriority.objects.all()
     serializer_class = WeeklyPrioritySerializer
     permission_classes = [IsAuthenticated, IsOwner]
     
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
-    filterset_fields = ["status", "priority"]
-    search_fields = ["name", "description"]
+   
+    search_fields = ["notes", "top_three_text", "week_start"]
     ordering_fields = ["priority", "created_at"]
 
     def perform_create(self, serializer):

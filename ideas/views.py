@@ -8,6 +8,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter, OrderingFilter
 
 class IdeaViewSet(OwnerQuerySetMixin, ModelViewSet):
+    queryset = Idea.objects.all()
     serializer_class = IdeaSerializer
     permission_classes = [IsAuthenticated, IsOwner]
     

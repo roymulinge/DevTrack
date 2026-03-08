@@ -122,16 +122,7 @@ virtual\Scripts\activate
 pip install -r requirements.txt
 ```
 
-4. **Create `.env` file** in project root:
 
-```env
-DB_NAME=devtrack_db
-DB_USER=ROY
-DB_PASSWORD=Destroy$6789
-DB_HOST=localhost
-DB_PORT=5432
-SECRET_KEY='django-insecure-z6*yqej77ys^%)l$+s=g4gidl1xuas3o$=*$)y*o@_fk4qc5j^'
-```
 
 5. **Apply migrations:**
 
