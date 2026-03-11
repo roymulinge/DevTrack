@@ -7,10 +7,12 @@ class Skill(OwnedModel):
     category = models.CharField(max_length=100)
     depth_level = models.PositiveSmallIntegerField()
     last_practiced = models.DateField(null=True, blank=True)
-    
+    created_at = models.DateTimeField(auto_now_add=True)
+
     class Meta:
         verbose_name = "Skill"
         verbose_name_plural = "Skills"
+        ordering = ['created_at']
         indexes = [
             models.Index(fields=["owner"]),
             models.Index(fields=["last_practiced"]),
