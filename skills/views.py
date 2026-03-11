@@ -25,14 +25,14 @@ class SkillViewSet(OwnerQuerySetMixin, ModelViewSet):
     def perform_create(self, serializer):
         serializer.save(owner=self.request.user)
 
-@action(detail=False, methods=["get"])
-def stale(self, request):
-    threshold = timezone.now().date() - timedelta(days=90)
+    @action(detail=False, methods=["get"])
+    def stale(self, request):
+        threshold = timezone.now().date() - timedelta(days=90)
 
-    stale_skills = self.get_queryset().filter(
-        models.Q(last_practiced__lt=threshold) |
-        models.Q(last_practiced__isnull=True)
-    )
+        stale_skills = self.get_queryset().filter(
+            models.Q(last_practiced__lt=threshold) |
+            models.Q(last_practiced__isnull=True)
+        )
 
-    serializer = self.get_serializer(stale_skills, many=True)
-    return Response(serializer.data)
+        serializer = self.get_serializer(stale_skills, many=True)
+        return Response(serializer.data)

@@ -47,7 +47,11 @@ class Assignment(OwnedModel):
         blank=True,
         related_name="assignments"
     )
-
+     # override onwership to match project owner
+    def save(self, *args, **kwargs):
+        if self.project:
+            self.owner = self.project.owner
+        super().save(*args, **kwargs)
     class Meta:
         verbose_name = "Assignment"
         verbose_name_plural = "Assignments"

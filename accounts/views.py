@@ -3,6 +3,7 @@ from rest_framework import generics
 from rest_framework.permissions import AllowAny
 from .serializers import RegisterSerializer
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
+
 # Create your views here.
 
 class RegisterView(generics.CreateAPIView):
