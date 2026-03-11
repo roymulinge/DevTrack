@@ -3,7 +3,7 @@ from rest_framework.permissions import IsAuthenticated
 from core.mixins import OwnerQuerySetMixin
 from core.permissions import IsOwner
 from .models import Project
-from .serializer import ProjectSerializer
+from .serializer import ProjectSerializer, AssignmentSerializer
 from django.utils import timezone
 from rest_framework.decorators import action
 from rest_framework.response import Response
