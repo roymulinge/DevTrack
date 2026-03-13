@@ -36,10 +36,12 @@ class AssignmentViewSet(OwnerQuerySetMixin, ModelViewSet):
     @action(detail=False, methods=["get"])
     def overdue(self, request):
 
-        overdue_assignments = self.get_queryset().filter(
+        overdue_assignments = (self.get_queryset().filter(
             deadline__lt=timezone.now(),
             completed=False
         )
+         .order_by("deadline")[:10]
+    )
 
         serializer = self.get_serializer(overdue_assignments, many=True)
         return Response(serializer.data)
