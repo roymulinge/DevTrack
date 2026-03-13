@@ -29,10 +29,12 @@ class SkillViewSet(OwnerQuerySetMixin, ModelViewSet):
     def stale(self, request):
         threshold = timezone.now().date() - timedelta(days=90)
 
-        stale_skills = self.get_queryset().filter(
+        stale_skills = (self.get_queryset().filter(
             models.Q(last_practiced__lt=threshold) |
             models.Q(last_practiced__isnull=True)
         )
+         .order_by("last_practiced")[:10]
+    )
 
         serializer = self.get_serializer(stale_skills, many=True)
         return Response(serializer.data)
