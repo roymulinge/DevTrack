@@ -14,7 +14,7 @@ class IdeaViewSet(OwnerQuerySetMixin, ModelViewSet):
     
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     filterset_fields = ["status"]
-    search_fields = ["title", "description"]
+    search_fields = ["problem_statement", "target_user", "revenue_model"]
     ordering_fields = ["created_at"]
     def perform_create(self, serializer):
         serializer.save(owner=self.request.user)
