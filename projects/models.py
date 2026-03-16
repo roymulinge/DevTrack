@@ -1,25 +1,33 @@
 from django.db import models
 from core.models import OwnedModel
 from django.db.models import Q
-# Create your models here.
+
 class Project(OwnedModel):
-    name = models.CharField(max_length=200)
-    vision = models.TextField()
-    priority = models.IntegerField()
+    name     = models.CharField(max_length=200)
+    vision   = models.TextField(blank=True, default="")   # ← allow empty
+    priority = models.CharField(                          # ← string not int
+        max_length=20,
+        choices=[
+            ('high',   'High'),
+            ('medium', 'Medium'),
+            ('low',    'Low'),
+        ],
+        default='medium'
+    )
     status = models.CharField(
         max_length=30,
         choices=[
-            ('active', 'Active'),
-            ('paused', 'Paused'),
+            ('active',    'Active'),
+            ('paused',    'Paused'),
             ('completed', 'Completed'),
         ],
         default='active'
     )
 
     class Meta:
-        verbose_name = "Project"
+        verbose_name        = "Project"
         verbose_name_plural = "Projects"
-        ordering = ["-created_at"]
+        ordering            = ["-created_at"]
         indexes = [
             models.Index(fields=["owner"]),
             models.Index(fields=["status"]),
@@ -28,17 +36,20 @@ class Project(OwnedModel):
     def __str__(self):
         return self.name
 
+
 class Assignment(OwnedModel):
     project = models.ForeignKey(
         Project,
         on_delete=models.CASCADE,
-        related_name="assignments"
+        related_name="assignments",
+        null=True,              # ← allow no project
+        blank=True,
     )
-    subject = models.CharField(max_length=200)
-    title = models.CharField(max_length=200)
-    deadline = models.DateTimeField()
-    effort_estimate = models.IntegerField()
-    completed = models.BooleanField(default=False)
+    subject         = models.CharField(max_length=200, blank=True, default="")
+    title           = models.CharField(max_length=200)
+    deadline        = models.DateTimeField(null=True, blank=True)   # ← optional
+    effort_estimate = models.IntegerField(null=True, blank=True)    # ← optional
+    completed       = models.BooleanField(default=False)
 
     related_skill = models.ForeignKey(
         "skills.Skill",
@@ -47,18 +58,19 @@ class Assignment(OwnedModel):
         blank=True,
         related_name="assignments"
     )
-     # override onwership to match project owner
+
     def save(self, *args, **kwargs):
         if self.project:
             self.owner = self.project.owner
         super().save(*args, **kwargs)
+
     class Meta:
-        verbose_name = "Assignment"
+        verbose_name        = "Assignment"
         verbose_name_plural = "Assignments"
-        ordering = ["deadline"]
+        ordering            = ["deadline"]
         constraints = [
             models.CheckConstraint(
-                condition= Q(effort_estimate__gte=0),
+                condition=Q(effort_estimate__gte=0),
                 name="positive_effort_estimate"
             )
         ]
@@ -66,5 +78,6 @@ class Assignment(OwnedModel):
             models.Index(fields=["deadline"]),
             models.Index(fields=["completed"]),
         ]
+
     def __str__(self):
         return self.title
