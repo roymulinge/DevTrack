@@ -22,6 +22,11 @@ class User(AbstractBaseUser, PermissionsMixin):
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
 
+    # Email verification
+    email_verified          = models.BooleanField(default=False)
+    verification_token      = models.UUIDField(default=uuid.uuid4, editable=False)
+    verification_token_created = models.DateTimeField(auto_now_add=True)
+    
     objects = UserManager()
 
     USERNAME_FIELD = 'email'
