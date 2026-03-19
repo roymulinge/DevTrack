@@ -27,6 +27,7 @@ INSTALLED_APPS = [
     'planning',
     'rest_framework',
     'corsheaders',
+    'drf_spectacular',
     'rest_framework.authtoken',
     'django_filters',
     'django_celery_beat',
@@ -111,6 +112,8 @@ REST_FRAMEWORK = {
     ],
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
     "PAGE_SIZE": 10,
+
+    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
 }
 EMAIL_BACKEND       = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST          = 'smtp.gmail.com'
