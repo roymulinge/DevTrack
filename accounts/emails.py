@@ -247,7 +247,7 @@ def send_overdue_reminder(user, assignments):
     msg = EmailMultiAlternatives(subject, text_content, settings.EMAIL_HOST_USER, [user.email])
     msg.attach_alternative(html_content, "text/html")
     msg.send()
-    
+
 def send_stale_skills_reminder(user, skills):
     if not skills:
         return
@@ -314,3 +314,70 @@ def send_stale_skills_reminder(user, skills):
     msg.attach_alternative(html_content, "text/html")
     msg.send()
 
+def send_weekly_reminder(user, priorities):
+    subject = "📅 New week — set your priorities on DevTrack"
+
+    priority_rows = ""
+    if priorities:
+        for i, p in enumerate(priorities[:3], 1):
+            priority_rows += f"""
+            <tr><td style="padding:8px 0;border-bottom:1px solid #1e293b;">
+              <span style="font-family:'Courier New',monospace;font-size:16px;font-weight:700;color:#1e293b;">{str(i).zfill(2)}</span>
+              <span style="font-size:13px;color:#94a3b8;margin-left:12px;">{p}</span>
+            </td></tr>
+            """
+    else:
+        priority_rows = """
+        <tr><td style="padding:16px 0;text-align:center;">
+          <span style="font-size:13px;color:#475569;font-style:italic;">No priorities set yet for this week</span>
+        </td></tr>
+        """
+
+    html_content = f"""
+<!DOCTYPE html>
+<html>
+<body style="margin:0;padding:0;background:#090d13;font-family:'Segoe UI',Arial,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#090d13;padding:40px 20px;">
+    <tr><td align="center">
+      <table width="520" cellpadding="0" cellspacing="0" style="background:#0f172a;border:1px solid #1e293b;border-radius:12px;overflow:hidden;">
+        <tr><td style="padding:28px 32px;border-bottom:1px solid #1e293b;">
+          <span style="font-family:'Courier New',monospace;font-size:16px;font-weight:700;color:#f1f5f9;">
+            <span style="color:#38bdf8;">[</span> &#9679; DevTrack <span style="color:#38bdf8;">]</span>
+          </span>
+        </td></tr>
+        <tr><td style="padding:32px;">
+          <p style="font-family:'Courier New',monospace;font-size:11px;color:#818cf8;letter-spacing:0.1em;text-transform:uppercase;margin:0 0 16px;">
+            // weekly check-in
+          </p>
+          <h1 style="font-size:20px;font-weight:700;color:#f1f5f9;margin:0 0 8px;">
+            Good morning {user.full_name.split()[0]} — new week, new focus
+          </h1>
+          <p style="font-size:14px;color:#94a3b8;margin:0 0 24px;">
+            Here are your top priorities for this week:
+          </p>
+          <table width="100%" cellpadding="0" cellspacing="0">
+            {priority_rows}
+          </table>
+          <table cellpadding="0" cellspacing="0" style="margin-top:24px;">
+            <tr><td style="background:#818cf8;border-radius:8px;">
+              <a href="{settings.FRONTEND_URL}/weekly-planner"
+                 style="display:inline-block;padding:12px 28px;font-family:'Courier New',monospace;font-size:13px;font-weight:700;color:#090d13;text-decoration:none;">
+                open planner
+              </a>
+            </td></tr>
+          </table>
+        </td></tr>
+        <tr><td style="padding:16px 32px;border-top:1px solid #1e293b;">
+          <p style="font-size:11px;color:#334155;margin:0;font-family:'Courier New',monospace;">DevTrack · Built for developers and students</p>
+        </td></tr>
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>
+    """
+
+    text_content = f"New week — set your priorities: {settings.FRONTEND_URL}/weekly-planner"
+    msg = EmailMultiAlternatives(subject, text_content, settings.EMAIL_HOST_USER, [user.email])
+    msg.attach_alternative(html_content, "text/html")
+    msg.send()
