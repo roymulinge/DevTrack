@@ -8,6 +8,9 @@ import uuid
 from .serializers import RegisterSerializer
 from .models import User
 from .emails import send_verification_email, send_welcome_email
+from google.oauth2 import id_token
+from google.auth.transport import requests as google_requests
+from rest_framework_simplejwt.tokens import RefreshToken
 
 
 class RegisterView(generics.CreateAPIView):
@@ -91,3 +94,47 @@ class ResendVerificationView(APIView):
             {"message": "Verification email resent."},
             status=status.HTTP_200_OK
         )
+    
+class GoogleLoginView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        token = request.data.get("credential")
+        if not token:
+            return Response({"error": "Token is required."}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            # Verify the Google token
+            idinfo = id_token.verify_oauth2_token(
+                token,
+                google_requests.Request(),
+                settings.GOOGLE_CLIENT_ID
+            )
+        except ValueError:
+            return Response({"error": "Invalid Google token."}, status=status.HTTP_400_BAD_REQUEST)
+
+        email     = idinfo.get("email")
+        full_name = idinfo.get("name", "")
+
+        # Get or create user
+        user, created = User.objects.get_or_create(
+            email=email,
+            defaults={
+                "full_name": full_name,
+                "email_verified": True,
+                "is_active": True,
+            }
+        )
+
+        # If user exists but not verified, verify them
+        if not user.email_verified:
+            user.email_verified = True
+            user.is_active = True
+            user.save()
+
+        # Generate JWT tokens
+        refresh = RefreshToken.for_user(user)
+        return Response({
+            "access":  str(refresh.access_token),
+            "refresh": str(refresh),
+        })
