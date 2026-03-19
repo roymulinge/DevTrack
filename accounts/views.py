@@ -11,7 +11,7 @@ from .emails import send_verification_email, send_welcome_email
 from google.oauth2 import id_token
 from google.auth.transport import requests as google_requests
 from rest_framework_simplejwt.tokens import RefreshToken
-
+from django.conf import settings
 
 class RegisterView(generics.CreateAPIView):
     serializer_class   = RegisterSerializer
