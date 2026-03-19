@@ -29,6 +29,7 @@ INSTALLED_APPS = [
     'corsheaders',
     'rest_framework.authtoken',
     'django_filters',
+    'django_celery_beat',
     'rest_framework_simplejwt',
     'django.contrib.admin',
     'django.contrib.auth',
@@ -110,6 +111,34 @@ REST_FRAMEWORK = {
     ],
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
     "PAGE_SIZE": 10,
+}
+EMAIL_BACKEND       = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST          = 'smtp.gmail.com'
+EMAIL_PORT          = 587
+EMAIL_USE_TLS       = True
+EMAIL_HOST_USER     = os.getenv('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
+DEFAULT_FROM_EMAIL  = os.getenv('EMAIL_HOST_USER')
+
+FRONTEND_URL = os.getenv('FRONTEND_URL', 'http://localhost:5173')
+
+# ── Celery ──
+CELERY_BROKER_URL        = os.getenv('CELERY_BROKER_URL', 'redis://localhost:6379/0')
+CELERY_RESULT_BACKEND    = os.getenv('CELERY_BROKER_URL', 'redis://localhost:6379/0')
+CELERY_TIMEZONE          = 'UTC'
+CELERY_BEAT_SCHEDULE     = {
+    'overdue-reminders-daily': {
+        'task':     'accounts.tasks.send_overdue_reminders',
+        'schedule': timedelta(hours=24),   # runs every 24 hours
+    },
+    'stale-skills-daily': {
+        'task':     'accounts.tasks.send_stale_skill_reminders',
+        'schedule': timedelta(hours=24),
+    },
+    'weekly-reminder-monday': {
+        'task':     'accounts.tasks.send_weekly_reminders',
+        'schedule': timedelta(weeks=1),    # runs every 7 days
+    },
 }
 
 # ── JWT ──
