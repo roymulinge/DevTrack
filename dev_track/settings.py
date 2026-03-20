@@ -163,34 +163,21 @@ STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # ── CORS — defined ONCE ──
+# ── CORS ──
+CORS_ALLOW_ALL_ORIGINS = False
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
     "http://localhost:3000",
     "https://devtrack-app.vercel.app",
 ]
-
 CORS_ALLOW_CREDENTIALS = True
-CORS_ALLOW_ALL_ORIGINS = True
-
 CORS_ALLOW_METHODS = [
-    "DELETE",
-    "GET",
-    "OPTIONS",
-    "PATCH",
-    "POST",
-    "PUT",
+    "DELETE", "GET", "OPTIONS", "PATCH", "POST", "PUT",
 ]
-
 CORS_ALLOW_HEADERS = [
-    "accept",
-    "accept-encoding",
-    "authorization",
-    "content-type",
-    "dnt",
-    "origin",
-    "user-agent",
-    "x-csrftoken",
-    "x-requested-with",
+    "accept", "accept-encoding", "authorization",
+    "content-type", "dnt", "origin", "user-agent",
+    "x-csrftoken", "x-requested-with",
 ]
 
 GOOGLE_CLIENT_ID = os.environ.get("GOOGLE_CLIENT_ID")
