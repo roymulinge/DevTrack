@@ -23,6 +23,11 @@ class Project(OwnedModel):
         ],
         default='active'
     )
+    skills = models.ManyToManyField(
+        "skills.Skill",
+        blank=True,
+        related_name="projects"
+    )
 
     class Meta:
         verbose_name        = "Project"
@@ -48,7 +53,7 @@ class Assignment(OwnedModel):
     subject         = models.CharField(max_length=200, blank=True, default="")
     title           = models.CharField(max_length=200)
     deadline        = models.DateTimeField(null=True, blank=True)   # ← optional
-    effort_estimate = models.IntegerField(null=True, blank=True)    # ← optional
+       #  Removed effort_estimate
     completed       = models.BooleanField(default=False)
 
     related_skill = models.ForeignKey(
@@ -68,12 +73,7 @@ class Assignment(OwnedModel):
         verbose_name        = "Assignment"
         verbose_name_plural = "Assignments"
         ordering            = ["deadline"]
-        constraints = [
-            models.CheckConstraint(
-                condition=Q(effort_estimate__gte=0),
-                name="positive_effort_estimate"
-            )
-        ]
+        
         indexes = [
             models.Index(fields=["deadline"]),
             models.Index(fields=["completed"]),
