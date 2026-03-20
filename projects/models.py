@@ -43,6 +43,13 @@ class Project(OwnedModel):
 
 
 class Assignment(OwnedModel):
+
+    STATUS_CHOICES = [
+        ('not_started', 'Not Started'),
+        ('in_progress', 'In Progress'),
+        ('completed',   'Completed'),
+    ]
+
     project = models.ForeignKey(
         Project,
         on_delete=models.CASCADE,
@@ -54,7 +61,11 @@ class Assignment(OwnedModel):
     title           = models.CharField(max_length=200)
     deadline        = models.DateTimeField(null=True, blank=True)   # ← optional
        #  Removed effort_estimate
-    completed       = models.BooleanField(default=False)
+    status       = models.CharField(         # ✅ replaces completed boolean
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default='not_started'
+    )
 
     related_skill = models.ForeignKey(
         "skills.Skill",
