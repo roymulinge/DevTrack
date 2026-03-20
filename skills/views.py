@@ -12,6 +12,8 @@ from .serializer import SkillSerializer
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter, OrderingFilter
 
+
+
 class SkillViewSet(OwnerQuerySetMixin, ModelViewSet):
     queryset = Skill.objects.all()
     serializer_class = SkillSerializer
@@ -37,4 +39,13 @@ class SkillViewSet(OwnerQuerySetMixin, ModelViewSet):
     )
 
         serializer = self.get_serializer(stale_skills, many=True)
+        return Response(serializer.data)
+    
+    @action(detail=True, methods=["post"])
+    def practice(self, request, pk=None):
+        """One click — marks skill as practiced today"""
+        skill = self.get_object()
+        skill.last_practiced = timezone.now().date()
+        skill.save()
+        serializer = self.get_serializer(skill)
         return Response(serializer.data)
