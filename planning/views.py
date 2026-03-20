@@ -35,13 +35,13 @@ class WeeklySummaryView(APIView):
 
         completed = Assignment.objects.filter(
             owner=request.user,
-            completed=True,
+            status='completed',
             deadline__gte=week_start
         ).count()
 
         overdue = Assignment.objects.filter(
             owner=request.user,
-            completed=False,
+            status__in=['not_started', 'in_progress'],
             deadline__lt=today
         ).count()
 
