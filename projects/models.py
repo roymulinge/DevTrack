@@ -92,7 +92,7 @@ class Assignment(OwnedModel):
         
         indexes = [
             models.Index(fields=["deadline"]),
-            models.Index(fields=["completed"]),
+            models.Index(fields=["status"]),
         ]
 
     def __str__(self):

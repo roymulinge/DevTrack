@@ -12,4 +12,4 @@ class ProjectAdmin(admin.ModelAdmin):
 @admin.register(Assignment)
 class AssignmentAdmin(admin.ModelAdmin):
     list_display = ("title", "project", "owner", "deadline", "completed")
-    list_filter = ("completed", "deadline")
+    list_filter = ("status", "deadline")
