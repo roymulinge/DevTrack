@@ -13,6 +13,7 @@ from datetime import timedelta
 
 from projects.models import Assignment, Project
 from skills.models import Skill
+from django.db import models
 class WeeklyPriorityViewSet(OwnerQuerySetMixin, ModelViewSet):
     queryset = WeeklyPriority.objects.all()
     serializer_class = WeeklyPrioritySerializer
@@ -60,4 +61,65 @@ class WeeklySummaryView(APIView):
             "overdue_assignments": overdue,
             "active_projects": active_projects,
             "skills_practiced_this_week": practiced_skills
+        })
+
+class DailyFocusView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        today     = timezone.now()
+        soon      = today + timedelta(days=3)
+        stale_threshold = today.date() - timedelta(days=7)
+
+        # Assignments due soon or overdue and not completed
+        urgent_assignments = Assignment.objects.filter(
+            owner=request.user,
+            deadline__lte=soon,
+            status__in=["not_started", "in_progress"]
+        ).order_by("deadline")[:5]
+
+        # Stale skills
+        stale_skills = Skill.objects.filter(
+            owner=request.user,
+        ).filter(
+            models.Q(last_practiced__lt=stale_threshold) |
+            models.Q(last_practiced__isnull=True)
+        ).order_by("last_practiced")[:3]
+
+        # Projects with overdue assignments
+        overdue_projects = Project.objects.filter(
+            owner=request.user,
+            status="active",
+            assignments__deadline__lt=today,
+            assignments__status__in=["not_started", "in_progress"]
+        ).distinct()[:3]
+
+        return Response({
+            "urgent_assignments": [
+                {
+                    "id":       a.id,
+                    "title":    a.title,
+                    "deadline": a.deadline,
+                    "status":   a.status,
+                    "days":     (a.deadline.date() - today.date()).days if a.deadline else None,
+                }
+                for a in urgent_assignments
+            ],
+            "stale_skills": [
+                {
+                    "id":             s.id,
+                    "name":           s.name,
+                    "last_practiced": s.last_practiced,
+                    "days_ago":       (today.date() - s.last_practiced).days if s.last_practiced else None,
+                }
+                for s in stale_skills
+            ],
+            "overdue_projects": [
+                {
+                    "id":   p.id,
+                    "name": p.name,
+                }
+                for p in overdue_projects
+            ],
+            "total_urgent": urgent_assignments.count() + stale_skills.count(),
         })
