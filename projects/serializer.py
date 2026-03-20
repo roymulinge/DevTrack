@@ -2,22 +2,24 @@ from rest_framework import serializers
 from .models import Project, Assignment
 from skills.models import Skill
 
+
 class SkillBriefSerializer(serializers.ModelSerializer):
-    """Lightweight skill info shown inside a project"""
     class Meta:
-        model = Skill
+        model  = Skill
         fields = ["id", "name", "category", "depth_level"]
+
 
 class AssignmentBriefSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Assignment
+        model  = Assignment
         fields = ["id", "title", "status", "deadline"]
 
+
 class ProjectSerializer(serializers.ModelSerializer):
-    skills_detail      = SkillBriefSerializer(source="skills", many=True, read_only=True)
-    skills             = serializers.PrimaryKeyRelatedField(many=True, queryset=Skill.objects.all(), required=False)
-    assignments        = AssignmentBriefSerializer(many=True, read_only=True)  # ✅ NEW
-    progress           = serializers.SerializerMethodField()                   # ✅ NEW
+    skills_detail = SkillBriefSerializer(source="skills", many=True, read_only=True)
+    skills        = serializers.PrimaryKeyRelatedField(many=True, queryset=Skill.objects.all(), required=False)
+    assignments   = AssignmentBriefSerializer(many=True, read_only=True)
+    progress      = serializers.SerializerMethodField()
 
     def get_progress(self, obj):
         total     = obj.assignments.count()
@@ -29,13 +31,24 @@ class ProjectSerializer(serializers.ModelSerializer):
             "completed": completed,
             "percent":   round((completed / total) * 100),
         }
+
     class Meta:
-           model = Project
-           fields = ["id", "name", "vision", "priority", "status", "skills", "skills_detail", "created_at", "updated_at", "owner"]
-           read_only_fields = ["owner", "created_at", "updated_at"]
+        model  = Project
+        fields = [
+            "id", "name", "vision", "priority", "status",
+            "skills", "skills_detail",
+            "assignments", "progress",       # ✅ added
+            "created_at", "updated_at", "owner"
+        ]
+        read_only_fields = ["owner", "created_at", "updated_at"]
+
 
 class AssignmentSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Assignment
-        fields = ["id", "project", "subject", "title", "deadline", "completed", "related_skill", "owner", "created_at", "updated_at"]
+        model  = Assignment
+        fields = [
+            "id", "project", "subject", "title", "deadline",
+            "status",        # ✅ replaces completed
+            "related_skill", "owner", "created_at", "updated_at"
+        ]
         read_only_fields = ["owner", "created_at", "updated_at"]
