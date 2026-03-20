@@ -38,7 +38,7 @@ class AssignmentViewSet(OwnerQuerySetMixin, ModelViewSet):
 
         overdue_assignments = (self.get_queryset().filter(
             deadline__lt=timezone.now(),
-            completed=False
+            status__in=['not_started', 'in_progress']
         )
          .order_by("deadline")[:10]
     )

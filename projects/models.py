@@ -80,6 +80,11 @@ class Assignment(OwnedModel):
             self.owner = self.project.owner
         super().save(*args, **kwargs)
 
+    #  @property
+    # def completed(self):
+    #     """Backward compatibility — so existing code doesnt break"""
+    #     return self.status == 'completed
+
     class Meta:
         verbose_name        = "Assignment"
         verbose_name_plural = "Assignments"
