@@ -8,15 +8,28 @@ class SkillBriefSerializer(serializers.ModelSerializer):
         model = Skill
         fields = ["id", "name", "category", "depth_level"]
 
-class ProjectSerializer(serializers.ModelSerializer):
-     skills_detail = SkillBriefSerializer(source="skills", many=True, read_only=True)
+class AssignmentBriefSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Assignment
+        fields = ["id", "title", "status", "deadline"]
 
-     skills = serializers.PrimaryKeyRelatedField(
-        many=True,
-        queryset=Skill.objects.all(),
-        required=False
-    )
-     class Meta:
+class ProjectSerializer(serializers.ModelSerializer):
+    skills_detail      = SkillBriefSerializer(source="skills", many=True, read_only=True)
+    skills             = serializers.PrimaryKeyRelatedField(many=True, queryset=Skill.objects.all(), required=False)
+    assignments        = AssignmentBriefSerializer(many=True, read_only=True)  # ✅ NEW
+    progress           = serializers.SerializerMethodField()                   # ✅ NEW
+
+    def get_progress(self, obj):
+        total     = obj.assignments.count()
+        completed = obj.assignments.filter(status="completed").count()
+        if total == 0:
+            return {"total": 0, "completed": 0, "percent": 0}
+        return {
+            "total":     total,
+            "completed": completed,
+            "percent":   round((completed / total) * 100),
+        }
+    class Meta:
            model = Project
            fields = ["id", "name", "vision", "priority", "status", "skills", "skills_detail", "created_at", "updated_at", "owner"]
            read_only_fields = ["owner", "created_at", "updated_at"]
