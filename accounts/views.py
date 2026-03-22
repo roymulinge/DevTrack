@@ -13,6 +13,9 @@ from google.auth.transport import requests as google_requests
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.conf import settings
 from rest_framework.permissions import IsAuthenticated
+from projects.models import Project, Assignment
+from skills.models import Skill
+from ideas.models import Idea
 
 class RegisterView(generics.CreateAPIView):
     serializer_class   = RegisterSerializer
@@ -179,4 +182,48 @@ class ChangePasswordView(APIView):
         return Response(
             {"message": "Password changed successfully."},
             status=status.HTTP_200_OK
+        )
+
+
+class ProfileView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+        return Response({
+            "id":             user.id,
+            "email":          user.email,
+            "full_name":      user.full_name,
+            "email_verified": user.email_verified,
+            "member_since":   user.verification_token_created,
+            "stats": {
+                "projects":    Project.objects.filter(owner=user).count(),
+                "skills":      Skill.objects.filter(owner=user).count(),
+                "assignments": Assignment.objects.filter(owner=user).count(),
+                "ideas":       Idea.objects.filter(owner=user).count(),
+            }
+        })
+
+    def patch(self, request):
+        user      = request.user
+        full_name = request.data.get("full_name", "").strip()
+        if not full_name:
+            return Response(
+                {"error": "Full name cannot be empty."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        user.full_name = full_name
+        user.save()
+        return Response({"message": "Profile updated.", "full_name": user.full_name})
+
+
+class DeleteAccountView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def delete(self, request):
+        user = request.user
+        user.delete()
+        return Response(
+            {"message": "Account deleted successfully."},
+            status=status.HTTP_204_NO_CONTENT
         )
