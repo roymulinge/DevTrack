@@ -115,6 +115,10 @@ REST_FRAMEWORK = {
     "PAGE_SIZE": 10,
 
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
+
+    "DEFAULT_THROTTLE_RATES":{
+        "change_password": "5/hour",
+    }
 }
 EMAIL_BACKEND       = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST          = 'smtp.gmail.com'

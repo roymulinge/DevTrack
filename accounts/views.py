@@ -150,7 +150,7 @@ class ChangePasswordThrottle(UserRateThrottle):
     
 class ChangePasswordView(APIView):
     permission_classes =[IsAuthenticated]
-
+    throttle_classes = [ChangePasswordThrottle]
     def post(self, request):
         serializer = ChangePasswordSerializer(data=request.data)
 
