@@ -5,12 +5,13 @@ from rest_framework.permissions import AllowAny
 from django.utils import timezone
 from datetime import timedelta
 import uuid
-from .serializers import RegisterSerializer
+from .serializers import RegisterSerializer, ChangePasswordSerializer
 from .models import User
 from .emails import send_verification_email, send_welcome_email
 from google.oauth2 import id_token
 from google.auth.transport import requests as google_requests
 from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework_simplejwt.token_blacklist.models import OutstandingToken, BlacklistedToken
 from django.conf import settings
 from rest_framework.permissions import IsAuthenticated
 from projects.models import Project, Assignment
@@ -144,53 +145,43 @@ class GoogleLoginView(APIView):
         })
     
 class ChangePasswordView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes =[IsAuthenticated]
 
     def post(self, request):
+        serializer = ChangePasswordSerializer(data=request.data)
+
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        
         user = request.user
-        old_password = request.data.get("old_password")
-        new_password = request.data.get("new_password")
-        new_password2 = request.data.get("new_password2")
 
-        if not old_password or not new_password or not new_password2:
-            return Response(
-                {"error": "All fields are required."},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-
+        old_password =serializer.validated_data['old_password']
+        new_password = serializer.validated_data['new_password']
+        
         if not user.check_password(old_password):
             return Response(
                 {"error": "Current password is incorrect."},
                 status=status.HTTP_400_BAD_REQUEST
             )
-
-        if new_password != new_password2:
-            return Response(
-                {"error": "New passwords do not match."},
-                status=status.HTTP_400_BAD_REQUEST
-            )
         
         if user.check_password(new_password):
             return Response(
-                {"error": "New password must be different from your current password."},
-                status = status.HTTP_400_BAD_REQUEST
-            )
-
-        if len(new_password) < 8:
-            return Response(
-                {"error": "Password must be at least 8 characters."},
+                {"error":"New password must be different from your current password."},
                 status=status.HTTP_400_BAD_REQUEST
             )
-
+        
         user.set_password(new_password)
         user.save()
 
+        tokens =OutstandingToken.objects.filter(user=user)
+
+        for token in tokens:
+            BlacklistedToken.objects.get_or_create(token=token)
+
         return Response(
-            {"message": "Password changed successfully."},
+            {"message": "password changed successfully.Please log in again"},
             status=status.HTTP_200_OK
         )
-
-
 class ProfileView(APIView):
     permission_classes = [IsAuthenticated]
 
