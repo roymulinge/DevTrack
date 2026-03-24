@@ -17,6 +17,7 @@ from rest_framework.permissions import IsAuthenticated
 from projects.models import Project, Assignment
 from skills.models import Skill
 from ideas.models import Idea
+from rest_framework.throttling import UserRateThrottle
 
 class RegisterView(generics.CreateAPIView):
     serializer_class   = RegisterSerializer
@@ -143,6 +144,9 @@ class GoogleLoginView(APIView):
             "access":  str(refresh.access_token),
             "refresh": str(refresh),
         })
+    
+class ChangePasswordThrottle(UserRateThrottle):
+    scope = 'change_password'
     
 class ChangePasswordView(APIView):
     permission_classes =[IsAuthenticated]
