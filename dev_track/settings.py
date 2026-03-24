@@ -32,6 +32,7 @@ INSTALLED_APPS = [
     'django_filters',
     'django_celery_beat',
     'rest_framework_simplejwt',
+    'rest_framework_simplejwt.token_blacklist',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
