@@ -169,6 +169,12 @@ class ChangePasswordView(APIView):
                 {"error": "New passwords do not match."},
                 status=status.HTTP_400_BAD_REQUEST
             )
+        
+        if user.check_password(new_password):
+            return Response(
+                {"error": "New password must be different from your current password."},
+                status = status.HTTP_400_BAD_REQUEST
+            )
 
         if len(new_password) < 8:
             return Response(
