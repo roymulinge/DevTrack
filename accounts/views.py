@@ -19,13 +19,18 @@ from skills.models import Skill
 from ideas.models import Idea
 from rest_framework.throttling import UserRateThrottle
 
+
 class RegisterView(generics.CreateAPIView):
     serializer_class   = RegisterSerializer
     permission_classes = [AllowAny]
 
     def perform_create(self, serializer):
         user = serializer.save()
-        send_verification_email(user)  # no try/except — show real errors
+        try:
+            send_verification_email(user)
+        except Exception as e:
+            
+            print(f"[WARN] Failed to send verification email to {user.email}: {e}") # no try/except — show real errors
 
 
 class VerifyEmailView(APIView):
@@ -152,6 +157,7 @@ class ChangePasswordView(APIView):
     permission_classes =[IsAuthenticated]
     throttle_classes = [ChangePasswordThrottle]
     def post(self, request):
+   
         serializer = ChangePasswordSerializer(data=request.data)
 
         if not serializer.is_valid():
@@ -186,6 +192,8 @@ class ChangePasswordView(APIView):
             {"message": "password changed successfully.Please log in again"},
             status=status.HTTP_200_OK
         )
+     
+    
 class ProfileView(APIView):
     permission_classes = [IsAuthenticated]
 
