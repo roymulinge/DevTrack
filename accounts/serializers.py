@@ -10,6 +10,14 @@ class RegisterSerializer(serializers.ModelSerializer):
         model = User
         fields = ('email', 'full_name', 'password', 'password2')
 
+    def validate_email(self, value):
+      
+        blocked = ['test.com', 'fake.com', 'example.com', 'mailinator.com', 'tempmail.com']
+        domain  = value.split('@')[-1].lower()
+        if domain in blocked:
+            raise serializers.ValidationError("Please use a real email address.")
+        return value.lower()    
+
     def validate(self, attrs):
         if attrs['password'] != attrs['password2']:
             raise serializers.ValidationError({"password": "Password fields didn't match."})
