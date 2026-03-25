@@ -26,11 +26,10 @@ class RegisterView(generics.CreateAPIView):
 
     def perform_create(self, serializer):
         user = serializer.save()
-        try:
-            send_verification_email(user)
-        except Exception as e:
-            
-            print(f"[WARN] Failed to send verification email to {user.email}: {e}") # no try/except — show real errors
+        
+        user.is_active      = True
+        user.email_verified = True
+        user.save()
 
 
 class VerifyEmailView(APIView):
