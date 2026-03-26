@@ -255,7 +255,7 @@ class ForgotPasswordView(APIView):
             uid = urlsafe_base64_encode(force_bytes(user.pk))
             token = token_generator.make_token(user)
 
-            reset_link = f"{settings.FRONTEND_URL}/reset-password?uid={uid}&token={token}"
+            reset_link = f"{settings.FRONTEND_URL.rstrip('/')}/reset-password?uid={uid}&token={token}"
 
             send_mail(
                 subject="Reset your password",
