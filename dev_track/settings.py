@@ -177,6 +177,13 @@ CORS_ALLOWED_ORIGINS = [
     "https://devtrack-app.vercel.app",
     "https://devtrack-n7nk.onrender.com",
 ]
+CSRF_TRUSTED_ORIGINS = [
+    "http://localhost:5173",
+    "http://localhost:3000",
+    "https://devtrack-app.vercel.app",
+    "https://devtrack-n7nk.onrender.com",
+]
+
 CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOW_METHODS = [
     "DELETE", "GET", "OPTIONS", "PATCH", "POST", "PUT",
