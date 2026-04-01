@@ -24,6 +24,12 @@ from django.utils.http import urlsafe_base64_encode
 from django.utils.encoding import force_bytes
 
 from django.core.mail import send_mail
+from drf_spectacular.utils import extend_schema, OpenApiExample
+
+@extend_schema(
+    summary="Register a new user",
+    description="Create a new user account. Email is verified and user is activated immediately."
+)
 class RegisterView(generics.CreateAPIView):
     serializer_class   = RegisterSerializer
     permission_classes = [AllowAny]
@@ -36,6 +42,10 @@ class RegisterView(generics.CreateAPIView):
         user.save()
 
 
+@extend_schema(
+    summary="Verify email address",
+    description="Verify a user's email address using a verification token. The token expires after 24 hours."
+)
 class VerifyEmailView(APIView):
     permission_classes = [AllowAny]
 
@@ -73,6 +83,10 @@ class VerifyEmailView(APIView):
         )
 
 
+@extend_schema(
+    summary="Resend verification email",
+    description="Resend a verification email to the user. Only works if the email exists and is not already verified."
+)
 class ResendVerificationView(APIView):
     permission_classes = [AllowAny]
 
@@ -108,7 +122,11 @@ class ResendVerificationView(APIView):
             {"message": "Verification email resent."},
             status=status.HTTP_200_OK
         )
-    
+
+@extend_schema(
+    summary="Login with Google",
+    description="Authenticate using a Google OAuth token. Creates or updates user account automatically."
+)
 class GoogleLoginView(APIView):
     permission_classes = [AllowAny]
 
@@ -155,7 +173,11 @@ class GoogleLoginView(APIView):
     
 class ChangePasswordThrottle(UserRateThrottle):
     scope = 'change_password'
-    
+
+@extend_schema(
+    summary="Change user password",
+    description="Change the current user's password. Requires the old password to be verified. All existing JWT sessions will be invalidated."
+)
 class ChangePasswordView(APIView):
     permission_classes =[IsAuthenticated]
     throttle_classes = [ChangePasswordThrottle]
@@ -195,8 +217,11 @@ class ChangePasswordView(APIView):
             {"message": "password changed successfully.Please log in again"},
             status=status.HTTP_200_OK
         )
-     
-    
+
+@extend_schema(
+    summary="Manage user profile",
+    description="Get authenticated user's profile information including stats, or update user's full name."
+)
 class ProfileView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -229,6 +254,10 @@ class ProfileView(APIView):
         return Response({"message": "Profile updated.", "full_name": user.full_name})
 
 
+@extend_schema(
+    summary="Delete user account",
+    description="Permanently delete the authenticated user's account and all associated data."
+)
 class DeleteAccountView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -240,6 +269,10 @@ class DeleteAccountView(APIView):
             status=status.HTTP_204_NO_CONTENT
         )
 
+@extend_schema(
+    summary="Request password reset",
+    description="Initiate password reset process. If the email exists, a password reset link will be sent to it."
+)
 class ForgotPasswordView(APIView):
     permission_classes = [AllowAny]
 
@@ -270,6 +303,10 @@ class ForgotPasswordView(APIView):
         )
 
 
+@extend_schema(
+    summary="Reset password",
+    description="Complete the password reset process using the reset token. All existing JWT sessions will be invalidated."
+)
 class ResetPasswordView(APIView):
     permission_classes = [AllowAny]
 

@@ -14,6 +14,34 @@ from datetime import timedelta
 from projects.models import Assignment, Project
 from skills.models import Skill
 from django.db import models
+from drf_spectacular.utils import extend_schema, extend_schema_view
+
+@extend_schema_view(
+    list=extend_schema(
+        summary="List weekly priorities",
+        description="Retrieve a list of weekly priority entries for the authenticated user.",
+    ),
+    create=extend_schema(
+        summary="Create weekly priority entry",
+        description="Create a new weekly priority entry. The authenticated user will be set as the owner.",
+    ),
+    retrieve=extend_schema(
+        summary="Retrieve a weekly priority entry",
+        description="Retrieve details of a specific weekly priority entry by its ID.",
+    ),
+    update=extend_schema(
+        summary="Update a weekly priority entry",
+        description="Update all fields of an existing weekly priority entry.",
+    ),
+    partial_update=extend_schema(
+        summary="Partially update a weekly priority entry",
+        description="Update specific fields of an existing weekly priority entry.",
+    ),
+    destroy=extend_schema(
+        summary="Delete a weekly priority entry",
+        description="Delete a weekly priority entry permanently.",
+    ),
+)
 class WeeklyPriorityViewSet(OwnerQuerySetMixin, ModelViewSet):
     queryset = WeeklyPriority.objects.all()
     serializer_class = WeeklyPrioritySerializer
@@ -27,6 +55,10 @@ class WeeklyPriorityViewSet(OwnerQuerySetMixin, ModelViewSet):
     def perform_create(self, serializer):
         serializer.save(owner=self.request.user)
 
+@extend_schema(
+    summary="Get weekly summary",
+    description="Retrieve a summary of the current week's productivity including completed assignments, overdue assignments, active projects, and skills practiced."
+)
 class WeeklySummaryView(APIView):
 
     def get(self, request):
@@ -63,6 +95,10 @@ class WeeklySummaryView(APIView):
             "skills_practiced_this_week": practiced_skills
         })
 
+@extend_schema(
+    summary="Get daily focus dashboard",
+    description="Retrieve a daily dashboard showing urgent assignments due soon, stale skills needing practice, and projects with overdue work."
+)
 class DailyFocusView(APIView):
     permission_classes = [IsAuthenticated]
 

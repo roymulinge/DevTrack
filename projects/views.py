@@ -11,7 +11,54 @@ from .models import Assignment
 from .serializer import AssignmentSerializer
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter, OrderingFilter
+from drf_spectacular.utils import extend_schema, extend_schema_view, OpenApiParameter
 
+@extend_schema_view(
+    list=extend_schema(
+        summary="List projects",
+        description="Retrieve a list of all projects belonging to the authenticated user. Can be filtered by status and priority, or searched by name and vision.",
+        parameters=[
+            OpenApiParameter(
+                name="status",
+                description="Filter projects by status (e.g., active, completed, on_hold)",
+                required=False,
+                type=str,
+            ),
+            OpenApiParameter(
+                name="priority",
+                description="Filter projects by priority (e.g., low, medium, high)",
+                required=False,
+                type=str,
+            ),
+            OpenApiParameter(
+                name="search",
+                description="Search projects by name or vision",
+                required=False,
+                type=str,
+            ),
+        ],
+    ),
+    create=extend_schema(
+        summary="Create a project",
+        description="Create a new project. The authenticated user will be set as the owner.",
+    ),
+    retrieve=extend_schema(
+        summary="Retrieve a project",
+        description="Retrieve details of a specific project by its ID.",
+    ),
+    update=extend_schema(
+        summary="Update a project",
+        description="Update all fields of an existing project.",
+    ),
+    partial_update=extend_schema(
+        summary="Partially update a project",
+        description="Update specific fields of an existing project.",
+    ),
+    destroy=extend_schema(
+        summary="Delete a project",
+        description="Delete a project permanently.",
+    ),
+)
 class ProjectViewSet(OwnerQuerySetMixin, ModelViewSet):
     queryset = Project.objects.all()
     serializer_class = ProjectSerializer
@@ -25,6 +72,32 @@ class ProjectViewSet(OwnerQuerySetMixin, ModelViewSet):
     def perform_create(self, serializer):
         serializer.save(owner=self.request.user)
 
+@extend_schema_view(
+    list=extend_schema(
+        summary="List assignments",
+        description="Retrieve a list of all assignments belonging to the authenticated user.",
+    ),
+    create=extend_schema(
+        summary="Create an assignment",
+        description="Create a new assignment (task). The authenticated user will be set as the owner.",
+    ),
+    retrieve=extend_schema(
+        summary="Retrieve an assignment",
+        description="Retrieve details of a specific assignment by its ID.",
+    ),
+    update=extend_schema(
+        summary="Update an assignment",
+        description="Update all fields of an existing assignment.",
+    ),
+    partial_update=extend_schema(
+        summary="Partially update an assignment",
+        description="Update specific fields of an existing assignment.",
+    ),
+    destroy=extend_schema(
+        summary="Delete an assignment",
+        description="Delete an assignment permanently.",
+    ),
+)
 class AssignmentViewSet(OwnerQuerySetMixin, ModelViewSet):
     queryset = Assignment.objects.all()
     serializer_class = AssignmentSerializer
@@ -33,6 +106,10 @@ class AssignmentViewSet(OwnerQuerySetMixin, ModelViewSet):
     def perform_create(self, serializer):
         serializer.save(owner=self.request.user)
 
+    @extend_schema(
+        summary="Get overdue assignments",
+        description="Retrieve the 10 most urgent overdue or in-progress assignments with deadlines in the past.",
+    )
     @action(detail=False, methods=["get"])
     def overdue(self, request):
 

@@ -11,9 +11,48 @@ from .models import Skill
 from .serializer import SkillSerializer
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter, OrderingFilter
+from drf_spectacular.utils import extend_schema, extend_schema_view, OpenApiParameter
 
-
-
+@extend_schema_view(
+    list=extend_schema(
+        summary="List skills",
+        description="Retrieve a list of all skills belonging to the authenticated user. Can be filtered by category or searched by name.",
+        parameters=[
+            OpenApiParameter(
+                name="category",
+                description="Filter skills by category",
+                required=False,
+                type=str,
+            ),
+            OpenApiParameter(
+                name="search",
+                description="Search skills by name",
+                required=False,
+                type=str,
+            ),
+        ],
+    ),
+    create=extend_schema(
+        summary="Create a skill",
+        description="Create a new skill to track. The authenticated user will be set as the owner.",
+    ),
+    retrieve=extend_schema(
+        summary="Retrieve a skill",
+        description="Retrieve details of a specific skill by its ID.",
+    ),
+    update=extend_schema(
+        summary="Update a skill",
+        description="Update all fields of an existing skill.",
+    ),
+    partial_update=extend_schema(
+        summary="Partially update a skill",
+        description="Update specific fields of an existing skill.",
+    ),
+    destroy=extend_schema(
+        summary="Delete a skill",
+        description="Delete a skill permanently.",
+    ),
+)
 class SkillViewSet(OwnerQuerySetMixin, ModelViewSet):
     queryset = Skill.objects.all()
     serializer_class = SkillSerializer
@@ -27,6 +66,10 @@ class SkillViewSet(OwnerQuerySetMixin, ModelViewSet):
     def perform_create(self, serializer):
         serializer.save(owner=self.request.user)
 
+    @extend_schema(
+        summary="Get stale skills",
+        description="Retrieve the 10 most stale skills that haven't been practiced in 90+ days or have never been practiced.",
+    )
     @action(detail=False, methods=["get"])
     def stale(self, request):
         threshold = timezone.now().date() - timedelta(days=90)
@@ -41,6 +84,10 @@ class SkillViewSet(OwnerQuerySetMixin, ModelViewSet):
         serializer = self.get_serializer(stale_skills, many=True)
         return Response(serializer.data)
     
+    @extend_schema(
+        summary="Mark skill as practiced",
+        description="One-click action to mark a skill as practiced today. Updates the last_practiced timestamp to the current date.",
+    )
     @action(detail=True, methods=["post"])
     def practice(self, request, pk=None):
         """One click — marks skill as practiced today"""
