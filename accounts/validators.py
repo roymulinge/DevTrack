@@ -13,3 +13,12 @@ BLOCKED_DOMAINS = {
     'maildrop.cc', 'temp-mail.org', 'getnada.com',
     'spam4.me', 'grr.la', 'getairmail.com',
 }
+
+
+def validate_email(value):
+    email = value.lower().strip()
+
+    try:
+        django_validate_email(email)
+    except DjangoValidationError:
+        raise serializers.ValidationError("Enter a valid email address.")
