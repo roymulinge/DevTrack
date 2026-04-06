@@ -5,3 +5,11 @@ from django.core.validators import validate_email as django_validate_email
 from django.core.exceptions import ValidationError as DjangoValidationError
 
 logger = logging.getLogger(__name__)
+
+BLOCKED_DOMAINS = {
+    'mailinator.com', 'tempmail.com', 'guerrillamail.com',
+    'throwam.com', 'sharklasers.com', 'yopmail.com',
+    'trashmail.com', 'fakeinbox.com', 'dispostable.com',
+    'maildrop.cc', 'temp-mail.org', 'getnada.com',
+    'spam4.me', 'grr.la', 'getairmail.com',
+}
