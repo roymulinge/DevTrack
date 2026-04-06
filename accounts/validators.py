@@ -22,3 +22,13 @@ def validate_email(value):
         django_validate_email(email)
     except DjangoValidationError:
         raise serializers.ValidationError("Enter a valid email address.")
+    
+    domain = email.split('@')[-1]
+
+    try:
+        dns.resolver.resolve(domain, 'MX')
+    except dns.resolver.NXDOMAIN:
+        raise serializers.ValidationError(
+            f"'{domain}' cannot receive email. Use an address from a mail provider."
+        )
+   
