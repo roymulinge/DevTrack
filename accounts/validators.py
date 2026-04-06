@@ -1,5 +1,7 @@
 import logging
+from socket import close
 import dns.resolver
+from difflib import get_close_matches
 from rest_framework import serializers
 from django.core.validators import validate_email as django_validate_email
 from django.core.exceptions import ValidationError as DjangoValidationError
@@ -13,6 +15,12 @@ BLOCKED_DOMAINS = {
     'maildrop.cc', 'temp-mail.org', 'getnada.com',
     'spam4.me', 'grr.la', 'getairmail.com',
 }
+
+COMMON_PROVIDERS = [
+    'gmail.com', 'yahoo.com', 'outlook.com', 'hotmail.com',
+    'icloud.com', 'me.com', 'live.com', 'protonmail.com',
+    'googlemail.com', 'ymail.com', 'msn.com',
+]
 
 
 def validate_real_email(value):
@@ -42,5 +50,12 @@ def validate_real_email(value):
         raise serializers.ValidationError(
             "Please use a real email address from a reputable provider."
         )
+    
+    close = get_close_matches(domain, COMMON_PROVIDERS, n=1, cutoff=0.8)
+    if close and close[0] != domain:
+         raise serializers.ValidationError(
+            f"Did you mean '{email.split('@')[0]}@{close[0]}'? "
+            f"Please check your email address."
+    )
     
     return email 
