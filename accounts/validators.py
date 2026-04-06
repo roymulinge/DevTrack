@@ -15,7 +15,7 @@ BLOCKED_DOMAINS = {
 }
 
 
-def validate_email(value):
+def validate_real_email(value):
     email = value.lower().strip()
 
     try:
