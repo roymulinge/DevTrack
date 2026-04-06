@@ -29,6 +29,18 @@ def validate_email(value):
         dns.resolver.resolve(domain, 'MX')
     except dns.resolver.NXDOMAIN:
         raise serializers.ValidationError(
+            f"'{domain}' does not exist. Check your email for typos"
+        )
+    except dns.resolver.NoAnswer:
+        raise serializers.ValidationError(
             f"'{domain}' cannot receive email. Use an address from a mail provider."
         )
-   
+    except (dns.resolver.TimeOut, Exception):
+        logger.waring(f"DNS lookup failed for domain: {domain}")
+
+    if domain in BLOCKED_DOMAINS:
+        raise serializers.ValidationError(
+            "Please use a real email address from a reputable provider."
+        )
+    
+    return email 
