@@ -16,6 +16,11 @@ class RegisterSerializer(serializers.ModelSerializer):
     def validate_email(self, value):
        email = validate_real_email(value)   
     
+       if User.objets.filter(email__iexact=email).exists():
+           raise serializers.ValidationError(
+               "An account with this email already exists."
+           )
+       return email
       
     def validate(self, attrs):
         if attrs['password'] != attrs['password2']:
