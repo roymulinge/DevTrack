@@ -4,7 +4,7 @@ from django.contrib.auth.password_validation import validate_password
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.utils.http import urlsafe_base64_decode
 from django.utils.encoding import force_str
-
+from .validators import validate_real_email
 class RegisterSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True, required=True, validators=[validate_password])
     password2 = serializers.CharField(write_only=True, required=True)
@@ -14,13 +14,9 @@ class RegisterSerializer(serializers.ModelSerializer):
         fields = ('email', 'full_name', 'password', 'password2')
 
     def validate_email(self, value):
+       email = validate_real_email(value)   
+    
       
-        blocked = ['test.com', 'fake.com', 'example.com', 'mailinator.com', 'tempmail.com']
-        domain  = value.split('@')[-1].lower()
-        if domain in blocked:
-            raise serializers.ValidationError("Please use a real email address.")
-        return value.lower()    
-
     def validate(self, attrs):
         if attrs['password'] != attrs['password2']:
             raise serializers.ValidationError({"password": "Password fields didn't match."})
