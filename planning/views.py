@@ -159,3 +159,58 @@ class DailyFocusView(APIView):
             ],
             "total_urgent": urgent_assignments.count() + stale_skills.count(),
         })
+
+class NextActionView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+        today = timezone.now().date()
+
+        # 1. Priority: any active project that has an assignment due soon (next 3 days)
+        soon = today + timedelta(days=3)
+        urgent_assignment = Assignment.objects.filter(
+            owner=user,
+            deadline__date__lte=soon,
+            deadline__date__gte=today,
+            status__in=['not_started', 'in_progress']
+        ).select_related('project').order_by('deadline').first()
+
+        if urgent_assignment and urgent_assignment.project:
+            return Response({
+                'type': 'assignment',
+                'id': urgent_assignment.id,
+                'name': urgent_assignment.title,
+                'project_id': urgent_assignment.project.id,
+                'project_name': urgent_assignment.project.name,
+            })
+
+        # 2. Next: any active project that has been updated recently (last 7 days)
+        recent_project = Project.objects.filter(
+            owner=user,
+            status='active'
+        ).order_by('-updated_at').first()
+
+        if recent_project:
+            return Response({
+                'type': 'project',
+                'id': recent_project.id,
+                'name': recent_project.name,
+            })
+
+        # 3. Fallback: any assignment that is overdue
+        overdue_assign = Assignment.objects.filter(
+            owner=user,
+            deadline__lt=today,
+            status__in=['not_started', 'in_progress']
+        ).order_by('deadline').first()
+
+        if overdue_assign:
+            return Response({
+                'type': 'assignment',
+                'id': overdue_assign.id,
+                'name': overdue_assign.title,
+            })
+
+        # 4. No action found
+        return Response({'type': None})
