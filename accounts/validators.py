@@ -42,9 +42,9 @@ def validate_real_email(value):
         raise serializers.ValidationError(
             f"'{domain}' cannot receive email. Use an address from a mail provider."
         )
-    except (dns.resolver.TimeOut, Exception):
+    except (dns.resolver.Timeout, Exception):
         logger.warning(f"DNS lookup failed for domain: {domain}")
-        
+        return value 
     
     if domain in BLOCKED_DOMAINS:
         raise serializers.ValidationError(
