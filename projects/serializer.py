@@ -38,7 +38,7 @@ class ProjectSerializer(serializers.ModelSerializer):
             "id", "name", "vision", "priority", "status",
             "skills", "skills_detail",
             "assignments", "progress",       # ✅ added
-            "created_at", "updated_at", "owner"
+            "created_at", "updated_at",
         ]
         read_only_fields = ["owner", "created_at", "updated_at"]
 
