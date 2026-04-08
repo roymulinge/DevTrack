@@ -44,8 +44,9 @@ def validate_real_email(value):
             f"'{domain}' cannot receive email. Use an address from a mail provider."
         )
     except (dns.resolver.TimeOut, Exception):
-        logger.waring(f"DNS lookup failed for domain: {domain}")
-
+        logger.warning(f"DNS lookup failed for domain: {domain}")
+        
+    
     if domain in BLOCKED_DOMAINS:
         raise serializers.ValidationError(
             "Please use a real email address from a reputable provider."
