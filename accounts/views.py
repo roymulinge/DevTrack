@@ -38,8 +38,8 @@ class RegisterView(generics.CreateAPIView):
         user = serializer.save()
 
         user.is_active      = True
-        user.email_verified = True
-        user.save()
+        user.email_verified = False
+        send_verification_email(user)
 
 
 @extend_schema(
