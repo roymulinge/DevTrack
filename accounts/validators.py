@@ -1,5 +1,4 @@
 import logging
-from socket import close
 import dns.resolver
 from difflib import get_close_matches
 from rest_framework import serializers
