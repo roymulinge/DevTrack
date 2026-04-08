@@ -2,6 +2,8 @@ from celery import shared_task
 from django.utils import timezone
 from datetime import timedelta
 
+from psycopg import logger
+
 
 @shared_task
 def send_overdue_reminders():
@@ -22,7 +24,7 @@ def send_overdue_reminders():
             try:
                 send_overdue_reminder(user, list(overdue))
             except Exception as e:
-                print(f"Overdue reminder error for {user.email}: {e}")
+                logger.error(f"Overdue reminder error for {user.email}: {e}")
 
 
 @shared_task
