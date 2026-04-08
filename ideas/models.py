@@ -3,6 +3,7 @@ from core.models import OwnedModel
 
 
 class Idea(OwnedModel):
+    title = models.CharField(max_length=200)
     problem_statement = models.TextField()
     target_user = models.CharField(max_length=200)
     revenue_model = models.CharField(max_length=200)
@@ -21,6 +22,11 @@ class Idea(OwnedModel):
         related_name="ideas"
     )
 
+    related_skills = models.ManyToManyField(
+        "skills.Skill",
+        blank=True,
+        related_name="ideas"
+    )
     class Meta:
         verbose_name = "Idea"
         verbose_name_plural = "Ideas"
