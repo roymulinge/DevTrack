@@ -15,6 +15,16 @@ class AssignmentBriefSerializer(serializers.ModelSerializer):
         fields = ["id", "title", "status", "deadline"]
 
 
+class ProjectBriefSerializer(serializers.ModelSerializer):
+    # Lightweight project — used in dashboard active_projects list
+    # No nested relations — keeps dashboard response small and fast
+    class Meta:
+        model  = Project
+        fields = ["id", "name", "status", "priority"]
+
+
+
+
 class ProjectSerializer(serializers.ModelSerializer):
     skills_detail = SkillBriefSerializer(source="skills", many=True, read_only=True)
     skills        = serializers.PrimaryKeyRelatedField(many=True, queryset=Skill.objects.all(), required=False)
