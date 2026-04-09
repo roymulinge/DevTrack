@@ -29,6 +29,7 @@ class Idea(OwnedModel):
     )
     class Meta:
         verbose_name = "Idea"
+        ordering = ["-created_at"]
         verbose_name_plural = "Ideas"
         indexes = [
             models.Index(fields=["status"]),
