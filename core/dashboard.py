@@ -25,7 +25,7 @@ class DashboardView(APIView):
 
     def get(self, request):
         user = request.user                              # who is logged in
-        now  = timezone.now()                            # current datetime (timezone-aware)
+        now  = timezone.now().replace(tzinfo=None)       # naive datetime to match DB values
         today = now.date()                               # just the date part
         seven_days_ago = today - timedelta(days=7)       # 7 days back from today
         week_start = today - timedelta(days=today.weekday())  # Monday of current week
