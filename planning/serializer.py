@@ -20,7 +20,7 @@ class WeeklyPrioritySerializer(serializers.ModelSerializer):
         model  = WeeklyPriority
         fields = [
             "id", "week_start", "notes",
-            "top_three_text",  # kept for backwards compatibility
+              
             "items",           # new structured items
             "owner", "created_at", "updated_at"
         ]
