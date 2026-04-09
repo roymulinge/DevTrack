@@ -3,7 +3,7 @@ from core.models import OwnedModel
 
 
 class Idea(OwnedModel):
-    title = models.CharField(max_length=200)
+    title = models.CharField(max_length=200, default="Untitled Idea")
     problem_statement = models.TextField()
     target_user = models.CharField(max_length=200)
     revenue_model = models.CharField(max_length=200)
