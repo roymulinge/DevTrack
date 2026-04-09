@@ -16,6 +16,7 @@ from skills.models import Skill
 from django.db import models
 from drf_spectacular.utils import extend_schema, extend_schema_view
 
+
 @extend_schema_view(
     list=extend_schema(
         summary="List weekly priorities",
@@ -46,14 +47,15 @@ class WeeklyPriorityViewSet(OwnerQuerySetMixin, ModelViewSet):
     queryset = WeeklyPriority.objects.all()
     serializer_class = WeeklyPrioritySerializer
     permission_classes = [IsAuthenticated, IsOwner]
-    
+
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
-   
-    search_fields = ["notes", "week_start"]
-    ordering_fields = ["priority", "created_at"]
+    # Removed top_three_text — field no longer exists on WeeklyPriority model
+    search_fields  = ["notes", "week_start"]
+    ordering_fields = ["week_start", "created_at"]
 
     def perform_create(self, serializer):
         serializer.save(owner=self.request.user)
+
 
 @extend_schema(
     summary="Get weekly summary",
@@ -63,20 +65,19 @@ class WeeklySummaryView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-
-        today = timezone.now().date()
+        today      = timezone.now().date()
         week_start = today - timedelta(days=7)
 
         completed = Assignment.objects.filter(
             owner=request.user,
             status='completed',
-            deadline__gte=week_start
+            deadline__date__gte=week_start        # ← use __date__ to avoid naive/aware mismatch
         ).count()
 
         overdue = Assignment.objects.filter(
             owner=request.user,
             status__in=['not_started', 'in_progress'],
-            deadline__lt=today
+            deadline__date__lt=today               # ← same fix
         ).count()
 
         active_projects = Project.objects.filter(
@@ -90,11 +91,12 @@ class WeeklySummaryView(APIView):
         ).count()
 
         return Response({
-            "completed_assignments": completed,
-            "overdue_assignments": overdue,
-            "active_projects": active_projects,
+            "completed_assignments":    completed,
+            "overdue_assignments":      overdue,
+            "active_projects":          active_projects,
             "skills_practiced_this_week": practiced_skills
         })
+
 
 @extend_schema(
     summary="Get daily focus dashboard",
@@ -104,14 +106,14 @@ class DailyFocusView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        today     = timezone.now()
-        soon      = today + timedelta(days=3)
-        stale_threshold = today.date() - timedelta(days=7)
+        today           = timezone.now().date()
+        soon            = today + timedelta(days=3)
+        stale_threshold = today - timedelta(days=7)
 
-        # Assignments due soon or overdue and not completed
+        # Assignments due soon or overdue and not completed — use __date to avoid naive/aware mismatch
         urgent_assignments = Assignment.objects.filter(
             owner=request.user,
-            deadline__lte=soon,
+            deadline__date__lte=soon,
             status__in=["not_started", "in_progress"]
         ).order_by("deadline")[:5]
 
@@ -127,7 +129,7 @@ class DailyFocusView(APIView):
         overdue_projects = Project.objects.filter(
             owner=request.user,
             status="active",
-            assignments__deadline__lt=today,
+            assignments__deadline__date__lt=today,  # ← __date fix
             assignments__status__in=["not_started", "in_progress"]
         ).distinct()[:3]
 
@@ -138,7 +140,7 @@ class DailyFocusView(APIView):
                     "title":    a.title,
                     "deadline": a.deadline,
                     "status":   a.status,
-                    "days":     (a.deadline.date() - today.date()).days if a.deadline else None,
+                    "days":     (a.deadline.date() - today).days if a.deadline else None,
                 }
                 for a in urgent_assignments
             ],
@@ -147,7 +149,7 @@ class DailyFocusView(APIView):
                     "id":             s.id,
                     "name":           s.name,
                     "last_practiced": s.last_practiced,
-                    "days_ago":       (today.date() - s.last_practiced).days if s.last_practiced else None,
+                    "days_ago":       (today - s.last_practiced).days if s.last_practiced else None,
                 }
                 for s in stale_skills
             ],
@@ -161,15 +163,15 @@ class DailyFocusView(APIView):
             "total_urgent": urgent_assignments.count() + stale_skills.count(),
         })
 
+
 class NextActionView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        user = request.user
+        user  = request.user
         today = timezone.now().date()
+        soon  = today + timedelta(days=3)
 
-        # 1. Priority: any active project that has an assignment due soon (next 3 days)
-        soon = today + timedelta(days=3)
         urgent_assignment = Assignment.objects.filter(
             owner=user,
             deadline__date__lte=soon,
@@ -179,14 +181,13 @@ class NextActionView(APIView):
 
         if urgent_assignment and urgent_assignment.project:
             return Response({
-                'type': 'assignment',
-                'id': urgent_assignment.id,
-                'name': urgent_assignment.title,
-                'project_id': urgent_assignment.project.id,
+                'type':         'assignment',
+                'id':           urgent_assignment.id,
+                'name':         urgent_assignment.title,
+                'project_id':   urgent_assignment.project.id,
                 'project_name': urgent_assignment.project.name,
             })
 
-        # 2. Next: any active project that has been updated recently (last 7 days)
         recent_project = Project.objects.filter(
             owner=user,
             status='active'
@@ -195,23 +196,21 @@ class NextActionView(APIView):
         if recent_project:
             return Response({
                 'type': 'project',
-                'id': recent_project.id,
+                'id':   recent_project.id,
                 'name': recent_project.name,
             })
 
-        # 3. Fallback: any assignment that is overdue
         overdue_assign = Assignment.objects.filter(
             owner=user,
-            deadline__lt=today,
+            deadline__date__lt=today,
             status__in=['not_started', 'in_progress']
         ).order_by('deadline').first()
 
         if overdue_assign:
             return Response({
                 'type': 'assignment',
-                'id': overdue_assign.id,
+                'id':   overdue_assign.id,
                 'name': overdue_assign.title,
             })
 
-        # 4. No action found
         return Response({'type': None})
