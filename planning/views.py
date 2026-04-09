@@ -49,7 +49,7 @@ class WeeklyPriorityViewSet(OwnerQuerySetMixin, ModelViewSet):
     
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
    
-    search_fields = ["notes", "top_three_text", "week_start"]
+    search_fields = ["notes", "week_start"]
     ordering_fields = ["priority", "created_at"]
 
     def perform_create(self, serializer):
