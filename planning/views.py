@@ -60,6 +60,7 @@ class WeeklyPriorityViewSet(OwnerQuerySetMixin, ModelViewSet):
     description="Retrieve a summary of the current week's productivity including completed assignments, overdue assignments, active projects, and skills practiced."
 )
 class WeeklySummaryView(APIView):
+    permission_classes = [IsAuthenticated]
 
     def get(self, request):
 
