@@ -98,8 +98,8 @@ class IdeaViewSet(OwnerQuerySetMixin, ModelViewSet):
         # Create project from idea
         project = Project.objects.create(
             owner=request.user,
-            name=idea.problem_statement[:200],  # use problem as project name
-            vision=f"Originally from idea: {idea.problem_statement}",
+            name=idea.title,                    # ← clean, uses the title field
+            vision=idea.problem_statement,      # ← problem becomes the vision
             priority="medium",
             status="active",
         )
