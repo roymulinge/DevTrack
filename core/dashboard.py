@@ -25,8 +25,8 @@ class DashboardView(APIView):
 
     def get(self, request):
         user = request.user                              # who is logged in
-        now  = timezone.now().replace(tzinfo=None)       # naive datetime to match DB values
-        today = now.date()                               # just the date part
+        
+        today = timezone.now().date()                    # just the date part
         seven_days_ago = today - timedelta(days=7)       # 7 days back from today
         week_start = today - timedelta(days=today.weekday())  # Monday of current week
 
@@ -34,7 +34,7 @@ class DashboardView(APIView):
         # select_related fetches project and skill in same DB query (no N+1)
         overdue = Assignment.objects.filter(
             owner=user,
-            deadline__lt=now,                            # deadline is in the past
+            deadline__lt=today,                          # deadline is in the past
             status__in=['not_started', 'in_progress']   # not yet done
         ).select_related('project', 'related_skill')[:5]
 
