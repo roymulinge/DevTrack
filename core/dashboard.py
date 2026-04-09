@@ -24,57 +24,53 @@ class DashboardView(APIView):
     permission_classes = [IsAuthenticated]  # ← blocks unauthenticated requests
 
     def get(self, request):
-        user = request.user                              # who is logged in
-        
-        today = timezone.now().date()                    # just the date part
-        seven_days_ago = today - timedelta(days=7)       # 7 days back from today
-        week_start = today - timedelta(days=today.weekday())  # Monday of current week
+        try:
+            user = request.user
+            today = timezone.now().date()
+            seven_days_ago = today - timedelta(days=7)
+            week_start = today - timedelta(days=today.weekday())
 
-        # ── Overdue assignments ──────────────────────────
-        # select_related fetches project and skill in same DB query (no N+1)
-        overdue = Assignment.objects.filter(
-            owner=user,
-            deadline__lt=today,                          # deadline is in the past
-            status__in=['not_started', 'in_progress']   # not yet done
-        ).select_related('project', 'related_skill')[:5]
+            overdue = Assignment.objects.filter(
+                owner=user,
+                deadline__lt=today,
+                status__in=['not_started', 'in_progress']
+            ).select_related('project', 'related_skill')[:5]
 
-        # ── Stale skills ─────────────────────────────────
-        stale_skills = Skill.objects.filter(
-            owner=user,
-            last_practiced__lt=seven_days_ago            # not practiced in 7 days
-        )[:5]
+            stale_skills = Skill.objects.filter(
+                owner=user,
+                last_practiced__lt=seven_days_ago
+            )[:5]
 
-        # ── Active projects ───────────────────────────────
-        # prefetch_related fetches assignments and skills in separate queries
-        # but avoids N+1 — better than select_related for ManyToMany
-        active_projects = Project.objects.filter(
-            owner=user,
-            status='active'
-        ).prefetch_related('assignments', 'skills')[:5]
+            active_projects = Project.objects.filter(
+                owner=user,
+                status='active'
+            ).prefetch_related('assignments', 'skills')[:5]
 
-        # ── This week's WeeklyPriority ────────────────────
-        weekly = WeeklyPriority.objects.filter(
-            owner=user,
-            week_start=week_start
-        ).prefetch_related('items').first()              # .first() returns None if not found
+            weekly = WeeklyPriority.objects.filter(
+                owner=user,
+                week_start=week_start
+            ).prefetch_related('items').first()
 
-        # ── Focus score — the intelligence layer ─────────
-        focus = self._compute_focus(overdue, stale_skills)
+            focus = self._compute_focus(overdue, stale_skills)
 
-        return Response({
-            "counts": {
-                # Simple counts for dashboard summary cards
-                "projects":    Project.objects.filter(owner=user).count(),
-                "skills":      Skill.objects.filter(owner=user).count(),
-                "assignments": Assignment.objects.filter(owner=user).count(),
-                "ideas":       Idea.objects.filter(owner=user).count(),
-            },
-            "overdue_assignments": AssignmentBriefSerializer(overdue, many=True).data,
-            "stale_skills":        SkillBriefSerializer(stale_skills, many=True).data,
-            "active_projects":     ProjectBriefSerializer(active_projects, many=True).data,
-            "this_week": WeeklyPrioritySerializer(weekly).data if weekly else None,
-            "focus": focus,
-        })
+            return Response({
+                "counts": {
+                    "projects":    Project.objects.filter(owner=user).count(),
+                    "skills":      Skill.objects.filter(owner=user).count(),
+                    "assignments": Assignment.objects.filter(owner=user).count(),
+                    "ideas":       Idea.objects.filter(owner=user).count(),
+                },
+                "overdue_assignments": AssignmentBriefSerializer(overdue, many=True).data,
+                "stale_skills":        SkillBriefSerializer(stale_skills, many=True).data,
+                "active_projects":     ProjectBriefSerializer(active_projects, many=True).data,
+                "this_week": WeeklyPrioritySerializer(weekly).data if weekly else None,
+                "focus": focus,
+            })
+
+        except Exception as e:
+            import traceback
+            traceback.print_exc()                        # prints to Render logs
+            return Response({"error": str(e)}, status=500)
 
     def _compute_focus(self, overdue, stale_skills):
         """
