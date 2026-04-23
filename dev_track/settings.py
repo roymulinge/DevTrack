@@ -20,6 +20,7 @@ ALLOWED_HOSTS = [
 ]
 
 INSTALLED_APPS = [
+    'core',
     'accounts',
     'projects',
     'skills',
