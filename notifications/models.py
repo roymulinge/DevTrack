@@ -87,16 +87,16 @@ class Notification(models.Model):
 
     #Meta
 
-class Meta:
-    ordering =['-created_at']
+    class Meta:
+        ordering =['-created_at']
 
-    indexes = [
-        models.Index(fields=['recipient', 'is_read']),
+        indexes = [
+            models.Index(fields=['recipient', 'is_read']),
 
-        models.Index(fields=['recipient', 'created_at']),
+            models.Index(fields=['recipient', 'created_at']),
 
-        models.Index(fields=['verb']),
-    ]
+            models.Index(fields=['verb']),
+        ]
 
     def __str__(self):
         return f"[{self.verb}] - {self.recipient.email} | {self.title}"
@@ -126,6 +126,6 @@ class Meta:
             body=body,
             target_type=target_type,
             target_id=target_id,
-            
+
         )
 
