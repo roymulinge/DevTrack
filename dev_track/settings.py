@@ -26,6 +26,7 @@ INSTALLED_APPS = [
     'skills',
     'ideas',
     'planning',
+    'notifications',
     'rest_framework',
     'corsheaders',
     'drf_spectacular',
