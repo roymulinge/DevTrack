@@ -238,6 +238,15 @@ class ProfileView(APIView):
                 "skills":      Skill.objects.filter(owner=user).count(),
                 "assignments": Assignment.objects.filter(owner=user).count(),
                 "ideas":       Idea.objects.filter(owner=user).count(),
+            },
+
+            #Streak data
+            "streak": {
+                "current":  user.current_streak,
+
+                "longest": user.longest_streak,
+
+                "last_active": user.last_active_date,
             }
         })
 
