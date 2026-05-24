@@ -1,181 +1,156 @@
-# DevTrack System
+# DevTrack — Backend API
+
+> REST API powering the DevTrack productivity system. Built with Django REST Framework and PostgreSQL.
+
+**Frontend Repo:** [DevTrack Frontend](https://github.com/roymulinge/DevTrack) · **Author:** [Roy Mulinge](https://github.com/roymulinge)
 
 ---
 
-## 1. Introduction
+## What Is DevTrack?
 
-The **DevTrack System** is a web-based application designed to help ambitious students and developers manage learning, school assignments, personal projects, and ideas within a single structured platform.
+DevTrack is a productivity system for developers and students. It replaces fragmented tools (Notion, spreadsheets, GitHub issues, notes apps) with one structured platform where skills, projects, assignments, and ideas are all linked together.
 
-Key benefits:
-
-* Centralized dashboard connecting skills, projects, assignments, and weekly priorities.
-* Improves execution clarity and reduces cognitive overload.
-* Enforces structured relationships between activities for focused and measurable progress.
+This repo is the Django backend — a fully documented REST API with JWT authentication, serving the React frontend.
 
 ---
 
-## 2. Problem Statement
+## Features
 
-Students and developers face multiple challenges:
-
-* Disconnected tools for managing learning, assignments, projects, and ideas.
-* Lack of structure leads to idea overload and low signal-to-noise ratio.
-* Learning is often theoretical, not tied to practical project implementation.
-* Assignments and personal projects compete for attention without clear prioritization.
-* No intelligent reminder system tied to skill development and deadlines.
-
----
-
-## 3. Project Objectives
-
-The DevTrack System aims to:
-
-* Digitally manage personal projects, academic assignments, and learning progress.
-* Connect skills to real projects to enforce applied learning.
-* Track deadlines and provide structured weekly priorities.
-* Reduce cognitive noise by linking related tasks and goals.
-* Provide reminder support for overdue assignments and inactive skills.
-* Deliver a scalable, multi-user SaaS-ready backend architecture.
+- **JWT Authentication** — Secure login, registration, and silent token refresh
+- **Project Management** — Full CRUD with skills linked to each project
+- **Skill Tracking** — Depth levels, practice history, inactivity detection
+- **Assignment Tracking** — Deadlines, status progression, overdue flagging
+- **Idea Vault** — Store and score startup/product ideas with complexity ratings
+- **Weekly Priority Planning** — Structured execution planning per week
+- **Dashboard Aggregation** — Single endpoint surfacing active projects, overdue assignments, inactive skills
+- **SaaS-ready architecture** — Multi-user, modular, built to scale
 
 ---
 
-## 4. System Overview
+## Tech Stack
 
-The system provides:
-
-* User registration and authentication.
-* Project management (add, edit, track progress).
-* Skill tracking with depth levels and practice history.
-* Assignment tracking with deadlines.
-* Idea vault for storing and evaluating product or startup ideas.
-* Weekly priority generation for structured execution.
-* Dashboard showing overdue tasks, inactive skills, and active projects.
-
----
-
-## 5. System Users
-
-* **Primary User:** Student / Developer
-* **Future Expansion:** Admin (for system monitoring and analytics)
-
----
-
-## 6. Features
-
-* Secure JWT-based authentication (login and registration).
-* Project Management Module.
-* Skill Tracking Module with depth levels.
-* Assignment Tracking with deadlines.
-* Idea Vault for structured idea management.
-* Weekly Priority Planning System.
-* Dashboard summary with aggregated data.
-* Reminder System (Email-based for deadlines and inactivity).
-
----
-
-## 7. Technologies
-
-**Frontend:**
-
-* React
-* Axios
-* Context API
-
-**Backend:**
-
-* Django
-* Django REST Framework
-* PostgreSQL
-* Simple JWT Authentication
-
-**Background Processing (Future Enhancements):**
-
-* Celery
-* Redis
-
-**Deployment:**
-
-* Render
-* GitHub
-
----
-
-## 8. Installation (Windows Example)
-
-1. **Clone the repository:**
-
-```bash
-git clone <https://github.com/roymulinge/DevTrack.git>
-cd DevTrack
+```
+Python 3.11+          — Language
+Django 4.x            — Web framework
+Django REST Framework — API layer
+PostgreSQL            — Primary database
+Simple JWT            — Authentication tokens
 ```
 
-2. **Set up virtual environment:**
-
-```bash
-python -m venv virtual
-virtual\Scripts\activate
+**Planned additions:**
 ```
-
-3. **Install dependencies:**
-
-```bash
-pip install -r requirements.txt
-```
-
-
-
-5. **Apply migrations:**
-
-```bash
-python manage.py migrate
-```
-
-6. **Run development server:**
-
-```bash
-python manage.py runserver
+Celery + Redis        — Background tasks, email reminders, notifications
 ```
 
 ---
 
-## 9. Project Structure
+## API Overview
+
+| Resource | Endpoints |
+|---|---|
+| Auth | `POST /api/auth/register/` `POST /api/auth/login/` `POST /api/auth/refresh/` |
+| Projects | `GET POST /api/projects/` · `GET PUT DELETE /api/projects/:id/` |
+| Skills | `GET POST /api/skills/` · `GET PUT DELETE /api/skills/:id/` |
+| Assignments | `GET POST /api/assignments/` · `GET PUT DELETE /api/assignments/:id/` |
+| Ideas | `GET POST /api/ideas/` · `GET PUT DELETE /api/ideas/:id/` |
+| Planning | `GET POST /api/planning/` |
+| Dashboard | `GET /api/dashboard/` |
+
+All endpoints (except auth) require a valid JWT access token in the `Authorization: Bearer <token>` header.
+
+---
+
+## Project Structure
 
 ```
 DevTrack/
-│
-├─ core/                  # Main application models and logic
-├─ dev_track/              # Django project settings
-│   ├─ settings.py        # Base settings
-│   └─ urls.py            # Project URLs
-├─ manage.py              # Django CLI entrypoint
-├─ requirements.txt       # Python dependencies
-└─ .env                   # Environment variables
+├── core/                  # Main app — models, views, serializers, URLs
+├── dev_track/
+│   ├── settings.py        # Project settings
+│   └── urls.py            # Root URL configuration
+├── manage.py              # Django CLI entrypoint
+├── requirements.txt       # Python dependencies
+└── .env                   # Environment variables (not committed)
 ```
 
 ---
 
-## 10. Future Roadmap
+## Getting Started
 
-* Add Celery + Redis for background tasks (reminders, notifications).
-* Implement React frontend with dashboards and forms.
-* Expand user roles: Admins and Super Admins.
-* Add analytics and reporting features.
-* Deploy full SaaS version with multi-tenant support.
+**Prerequisites**
+- Python 3.11+
+- PostgreSQL running locally
+
+```bash
+# Clone the repo
+git clone https://github.com/roymulinge/DevTrack.git
+cd DevTrack
+
+# Create and activate virtual environment
+python -m venv venv
+source venv/bin/activate       # Mac/Linux
+venv\Scripts\activate          # Windows
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Set up environment variables
+cp .env.example .env
+# Fill in your database credentials and secret key
+
+# Run migrations
+python manage.py migrate
+
+# Start the development server
+python manage.py runserver
+```
+
+**Environment Variables**
+```env
+SECRET_KEY=your-django-secret-key
+DEBUG=True
+DATABASE_URL=postgres://user:password@localhost:5432/devtrack
+ALLOWED_HOSTS=localhost,127.0.0.1
+```
 
 ---
 
-## 11. Conclusion
+## Authentication Flow
 
-The **DevTrack System** provides a structured, scalable, and secure solution for managing learning, academic work, and personal development projects.
-
-By linking skills, assignments, projects, and ideas, it improves execution discipline and reduces cognitive overload.
-
-Its modular backend architecture ensures scalability for future SaaS deployment and demonstrates strong full-stack engineering principles suitable for academic presentation and portfolio development.
+1. `POST /api/auth/register/` → creates user, returns tokens
+2. `POST /api/auth/login/` → returns `access` + `refresh` tokens
+3. Client attaches `access` token to every request header
+4. On expiry → `POST /api/auth/refresh/` silently returns a new access token
+5. No session cookies — fully stateless JWT authentication
 
 ---
 
-## 12. Author
+## Deployment
 
-* **Name:** Roy Mulinge
-* **Email:** mutuaroymulinge@gmail.com
-* **GitHub:** https://github.com/roymulinge/DevTrack.git
+Backend is designed to deploy on **Render** (free tier available).
+
+1. Connect your GitHub repo to [render.com](https://render.com)
+2. Set environment variables in Render dashboard
+3. Set build command: `pip install -r requirements.txt && python manage.py migrate`
+4. Set start command: `gunicorn dev_track.wsgi`
+
+---
+
+## Roadmap
+
+- [ ] Celery + Redis for email reminders and deadline notifications
+- [ ] Admin dashboard for system monitoring
+- [ ] Analytics endpoints — learning velocity, project completion rates
+- [ ] Multi-tenant support for full SaaS deployment
+- [ ] WebSocket support for real-time notifications
+
+---
+
+## Author
+
+**Roy Mulinge**
+[GitHub](https://github.com/roymulinge) · [LinkedIn](https://www.linkedin.com/in/roy-mulinge-4b6a80251) · mutuaroymulinge@gmail.com
+
+---
+
+*ISC License — see LICENSE for details.*
