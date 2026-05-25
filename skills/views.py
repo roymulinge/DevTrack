@@ -12,6 +12,7 @@ from .serializer import SkillSerializer
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter, OrderingFilter
 from drf_spectacular.utils import extend_schema, extend_schema_view, OpenApiParameter
+from notifications.models import Notification
 
 @extend_schema_view(
     list=extend_schema(
@@ -64,7 +65,32 @@ class SkillViewSet(OwnerQuerySetMixin, ModelViewSet):
     ordering_fields = ["created_at"]
     
     def perform_create(self, serializer):
-        serializer.save(owner=self.request.user)
+        skill = serializer.save(owner=self.request.user)
+
+        Notification.create_for_user(
+            user=self.request.user,
+            verb="skill_created",
+            title="Skill added",
+            body=f"'{skill.name}' was added to your skills.",
+            target_type="skill",
+            target_id=skill.id,
+        )
+
+
+    def perform_destroy(self, instance):
+        name = instance.name
+        skill_id = instance.id
+
+        instance.delete()
+
+        Notification.create_for_user(
+            user=self.request.user,
+            verb="skill_deleted",
+            title="Skill deleted",
+            body=f"'{name}' was deleted.",
+            target_type="skill",
+            target_id=skill_id,
+        )
 
     @extend_schema(
         summary="Get stale skills",
