@@ -14,7 +14,7 @@ from projects.models import Assignment, Project
 from skills.models import Skill
 from django.db import models
 from drf_spectacular.utils import extend_schema, extend_schema_view
-
+from notifications.models import Notification
 
 @extend_schema_view(
     list=extend_schema(summary="List weekly priorities"),
@@ -33,7 +33,32 @@ class WeeklyPriorityViewSet(OwnerQuerySetMixin, ModelViewSet):
     ordering_fields    = ["week_start", "created_at"]
 
     def perform_create(self, serializer):
-        serializer.save(owner=self.request.user)
+        weekly_priority = serializer.save(owner=self.request.user)
+
+        Notification.create_for_user(
+            user=self.request.user,
+            verb="plan_created",
+            title="Weekly plan created",
+            body=f"Weekly plan for {weekly_priority.week_start} was created.",
+            target_type="weekly_priority",
+            target_id=weekly_priority.id,
+        )
+
+
+    def perform_destroy(self, instance):
+        week_start = instance.week_start
+        weekly_priority_id = instance.id
+
+        instance.delete()
+
+        Notification.create_for_user(
+            user=self.request.user,
+            verb="plan_deleted",
+            title="Weekly plan deleted",
+            body=f"Weekly plan for {week_start} was deleted.",
+            target_type="weekly_priority",
+            target_id=weekly_priority_id,
+        )
 
 
 @extend_schema_view(
@@ -53,6 +78,21 @@ class PriorityItemViewSet(OwnerQuerySetMixin, ModelViewSet):
 
     def perform_create(self, serializer):
         serializer.save(owner=self.request.user)
+
+
+    def perform_update(self, serializer):
+        old_done = self.get_object().done
+        item = serializer.save()
+
+        if old_done is False and item.done is True:
+            Notification.create_for_user(
+                user=self.request.user,
+                verb="is_done",
+                title="Priority item completed",
+                body=f"'{item.title}' was completed.",
+                target_type="priority_item",
+                target_id=item.id,
+            )
 
 
 @extend_schema(summary="Get weekly summary")

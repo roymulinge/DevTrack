@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import BaseUserManager, AbstractBaseUser, PermissionsMixin
 import uuid
+from notifications.models import Notification
 # Create your models here.
 class UserManager(BaseUserManager):
     def create_user(self, email, password=None, **extra_fields):
@@ -80,3 +81,12 @@ class User(AbstractBaseUser, PermissionsMixin):
             'longest_streak',
             'last_active_date'
         ])
+
+        Notification.create_for_user(
+            user=user,
+            verb="streak_milestone",
+            title="Streak milestone reached",
+            body=f"You hit a {streak_count}-day streak!",
+            target_type="streak",
+            target_id=None,
+        )
