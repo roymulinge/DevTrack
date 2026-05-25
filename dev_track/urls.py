@@ -32,4 +32,5 @@ urlpatterns = [
     path("api/", include("ideas.urls")),
     path("api/", include("planning.urls")),
     path("api/core/", include("core.urls")),
+    path("api/notifications/", include("notifications.urls")),
 ]
