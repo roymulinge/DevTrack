@@ -120,5 +120,14 @@ class SkillViewSet(OwnerQuerySetMixin, ModelViewSet):
         skill = self.get_object()
         skill.last_practiced = timezone.now().date()
         skill.save()
+
+        Notification.create_for_user(
+            user=request.user,
+            verb="skill_practiced",
+            title="Skill practiced",
+            body=f"You practiced '{skill.name}' today.",
+            target_type="skill",
+            target_id=skill.id,
+        )
         serializer = self.get_serializer(skill)
         return Response(serializer.data)
