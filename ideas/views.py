@@ -11,6 +11,8 @@ from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter, OrderingFilter
 from projects.models import Project
 from drf_spectacular.utils import extend_schema, extend_schema_view, OpenApiParameter, OpenApiExample
+from notifications.models import Notification
+
 
 @extend_schema_view(
     list=extend_schema(
@@ -63,7 +65,44 @@ class IdeaViewSet(OwnerQuerySetMixin, ModelViewSet):
     ordering_fields = ["created_at"]
 
     def perform_create(self, serializer):
-        serializer.save(owner=self.request.user)
+        idea = serializer.save(owner=self.request.user)
+
+        Notification.create_for_user(
+            user=self.request.user,
+            verb="idea_created",
+            title="Idea created",
+            body=f"'{idea.title}' was added to your ideas.",
+            target_type="idea",
+            target_id=idea.id,
+        )
+    
+    def perform_update(self, serializer):
+        idea = serializer.save()
+
+        Notification.create_for_user(
+            user=self.request.user,
+            verb="idea_updated",
+            title="Idea updated",
+            body=f"'{idea.title}' was updated.",
+            target_type="idea",
+            target_id=idea.id,
+        )
+
+
+    def perform_destroy(self, instance):
+        title = instance.title
+        idea_id = instance.id
+
+        instance.delete()
+
+        Notification.create_for_user(
+            user=self.request.user,
+            verb="idea_deleted",
+            title="Idea deleted",
+            body=f"'{title}' was deleted.",
+            target_type="idea",
+            target_id=idea_id,
+        )
 
     @extend_schema(
         summary="Convert idea to project",
@@ -108,6 +147,15 @@ class IdeaViewSet(OwnerQuerySetMixin, ModelViewSet):
         idea.related_project = project
         idea.status          = "in_progress"
         idea.save()
+
+        Notification.create_for_user(
+            user=request.user,
+            verb="idea_converted",
+            title="Idea converted to project",
+            body=f"'{idea.title}' is now '{project.name}'.",
+            target_type="project",
+            target_id=project.id,
+        )
 
         return Response({
             "message":    "Idea converted to project successfully!",
