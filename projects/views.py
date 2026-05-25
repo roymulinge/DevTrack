@@ -153,7 +153,47 @@ class AssignmentViewSet(OwnerQuerySetMixin, ModelViewSet):
     permission_classes = [IsAuthenticated, IsOwner]
 
     def perform_create(self, serializer):
-        serializer.save(owner=self.request.user)
+        assignment = serializer.save(owner=self.request.user)
+
+        Notification.create_for_user(
+            user=self.request.user,
+            verb="assignment_created",
+            title="Assignment created",
+            body=f"'{assignment.title}' was created.",
+            target_type="assignment",
+            target_id=assignment.id,
+        )
+
+
+    def perform_update(self, serializer):
+        old_status = self.get_object().status
+        assignment = serializer.save()
+
+        if old_status != "completed" and assignment.status == "completed":
+            Notification.create_for_user(
+                user=self.request.user,
+                verb="assignment_completed",
+                title="Assignment completed",
+                body=f"'{assignment.title}' was marked as completed.",
+                target_type="assignment",
+                target_id=assignment.id,
+            )
+
+
+    def perform_destroy(self, instance):
+        title = instance.title
+        assignment_id = instance.id
+
+        instance.delete()
+
+        Notification.create_for_user(
+            user=self.request.user,
+            verb="assignment_deleted",
+            title="Assignment deleted",
+            body=f"'{title}' was deleted.",
+            target_type="assignment",
+            target_id=assignment_id,
+        )
 
     @extend_schema(
         summary="Get overdue assignments",
