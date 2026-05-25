@@ -12,6 +12,7 @@ from .serializer import AssignmentSerializer
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter, OrderingFilter
 from drf_spectacular.utils import extend_schema, extend_schema_view, OpenApiParameter
+from notifications.models import Notification
 
 @extend_schema_view(
     list=extend_schema(
@@ -70,7 +71,55 @@ class ProjectViewSet(OwnerQuerySetMixin, ModelViewSet):
     ordering_fields = ["priority", "created_at"]
 
     def perform_create(self, serializer):
-        serializer.save(owner=self.request.user)
+        project = serializer.save(owner=self.request.user)
+
+        Notification.create_for_user(
+            user=self.request.user,
+            verb="project_created",
+            title="Project created",
+            body=f"'{project.name}' was created.",
+            target_type="project",
+            target_id=project.id,
+        )
+
+
+    def perform_update(self, serializer):
+        old_status = self.get_object().status
+        project = serializer.save()
+
+        if old_status != "completed" and project.status == "completed":
+            verb = "project_completed"
+            title = "Project completed"
+            body = f"'{project.name}' was marked as completed."
+        else:
+            verb = "project_updated"
+            title = "Project updated"
+            body = f"'{project.name}' was updated."
+
+        Notification.create_for_user(
+            user=self.request.user,
+            verb=verb,
+            title=title,
+            body=body,
+            target_type="project",
+            target_id=project.id,
+        )
+
+
+    def perform_destroy(self, instance):
+        name = instance.name
+        project_id = instance.id
+
+        instance.delete()
+
+        Notification.create_for_user(
+            user=self.request.user,
+            verb="project_deleted",
+            title="Project deleted",
+            body=f"'{name}' was deleted.",
+            target_type="project",
+            target_id=project_id,
+        )
 
 @extend_schema_view(
     list=extend_schema(
