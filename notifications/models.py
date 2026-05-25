@@ -57,7 +57,7 @@ class Notification(models.Model):
     )
 
     verb = models.CharField(
-        max_length =30,
+        max_length =50,
         choices =VERB_CHOICES,
     )
 
@@ -94,6 +94,8 @@ class Notification(models.Model):
             models.Index(fields=['recipient', 'is_read']),
 
             models.Index(fields=['recipient', 'created_at']),
+
+            models.Index(fields=["recipient", "is_read", "created_at"]),
 
             models.Index(fields=['verb']),
         ]

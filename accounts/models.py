@@ -83,10 +83,10 @@ class User(AbstractBaseUser, PermissionsMixin):
         ])
 
         Notification.create_for_user(
-            user=user,
+            user=User,
             verb="streak_milestone",
             title="Streak milestone reached",
-            body=f"You hit a {streak_count}-day streak!",
+            body=f"You hit a {self.current_streak}-day streak!",
             target_type="streak",
             target_id=None,
         )
