@@ -74,12 +74,15 @@ TEMPLATES = [
 WSGI_APPLICATION = 'dev_track.wsgi.application'
 
 # ── Database ──
-if os.environ.get("DATABASE_URL"):
+
+DATABASE_URL = os.environ.get("DATABASE_URL")
+
+if DATABASE_URL:
     DATABASES = {
         "default": dj_database_url.config(
-            default=os.environ.get("DATABASE_URL"),
+            default=DATABASE_URL,
             conn_max_age=600,
-            ssl_require=True,
+            ssl_require="render.com" in DATABASE_URL,  # SSL only for external URLs
         )
     }
 else:
