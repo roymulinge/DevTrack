@@ -1,0 +1,14 @@
+services:
+  - type: web
+    name: DevTrack
+    runtime: python
+    buildCommand: "pip install -r requirements.txt"
+    preDeployCommand: "python manage.py migrate"
+    startCommand: "gunicorn dev_track.wsgi:application"
+    envVars:
+      - key: DATABASE_URL
+        sync: false
+      - key: SECRECT_KEY
+        sync: false
+      - key: DEBUG
+        value: "False" 
