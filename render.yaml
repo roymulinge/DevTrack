@@ -8,7 +8,7 @@ services:
     envVars:
       - key: DATABASE_URL
         sync: false
-      - key: SECRECT_KEY
+      - key: SECRET_KEY
         sync: false
       - key: DEBUG
         value: "False" 
